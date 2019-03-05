@@ -15,7 +15,7 @@ void stop(void)
     BP.set_motor_power(PORT_B, 0);
     BP.set_motor_power(PORT_C, 0);
 }
-// De robot rijdt in een vierkant, nog niet getest.
+// De robot rijdt in een vierkant, getest en werkt, rijdt accuraat genoeg.
 void square(void)
 {
     for(unsigned int i=0;i<4;i++)
