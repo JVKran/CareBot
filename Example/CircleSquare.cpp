@@ -19,7 +19,7 @@ void stop(void)
 void square(void)
 {
     for(unsigned int i=0;i<4;i++)
-    {
+    { // Rij vooruit
         BP.set_motor_power(PORT_B, 20);
         BP.set_motor_power(PORT_C, 20);
         usleep(500000);
@@ -29,6 +29,7 @@ void square(void)
         BP.set_motor_power(PORT_B, 50);
         BP.set_motor_power(PORT_C, 50);
         usleep(500000);
+        // ga naar rechts
         BP.set_motor_power(PORT_B, -270);
         BP.set_motor_power(PORT_C, 270);
         sleep(2);
