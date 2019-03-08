@@ -15,24 +15,19 @@ void stop(void)
     BP.set_motor_power(PORT_B, 0);
     BP.set_motor_power(PORT_C, 0);
 }
-// De robot rijdt in een vierkant, getest en werkt, rijdt accuraat genoeg.
+// De robot rijdt in een vierkant, nog niet getest.
 void square(void)
 {
     for(unsigned int i=0;i<4;i++)
     { // Rij vooruit
-        BP.set_motor_power(PORT_B, 20);
-        BP.set_motor_power(PORT_C, 20);
-        usleep(500000);
-        BP.set_motor_power(PORT_B, 40);
-        BP.set_motor_power(PORT_C, 40);
-        usleep(500000);
-        BP.set_motor_power(PORT_B, 50);
-        BP.set_motor_power(PORT_C, 50);
-        usleep(500000);
-        // ga naar rechts
-        BP.set_motor_power(PORT_B, -270);
-        BP.set_motor_power(PORT_C, 270);
+      
+        BP.set_motor_power(PORT_B, 60);
+        BP.set_motor_power(PORT_C, 56);
         sleep(2);
+        // ga naar rechts
+        BP.set_motor_dps(PORT_B, -45);
+        BP.set_motor_dps(PORT_C, 45);
+        usleep(700000);
         stop();
     }
 }
@@ -43,10 +38,10 @@ void circle(void)
     {
 
         BP.set_motor_power(PORT_B, 50);
-        BP.set_motor_power(PORT_C, 50);
+        BP.set_motor_power(PORT_C, 25);
         usleep(500000);
-        BP.set_motor_power(PORT_B, -270);
-        BP.set_motor_power(PORT_C, 270);
+        //BP.set_motor_power(PORT_B, -270);
+        //BP.set_motor_power(PORT_C, 270);
         sleep(2);
         stop();
     }
@@ -103,7 +98,7 @@ int main()
         cout << "Press w (forward), s (backward), a(left), d (right), z (square), r (circle) x (stop): " << endl;
         cin >> inp;	//Take input from the terminal
         //Move the bot
-        if(inp=='f') {
+        if(inp=='w') {
             fwd();
         }
 
