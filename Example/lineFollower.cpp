@@ -20,19 +20,19 @@ bool initialize(){
 	BP.set_motor_limits(PORT_C, 60, 0);
 }
 
-bool calibrate(int & blak, int & white, sensor_color_t Color1){
+bool calibrate(int & blak, int & white, sensor_light_t Light3){
 	char input;
 	cout << "Plaats op achtergrond en voer 'y' in.";
 	cin >> input;
 	if(input == 'y'){
-		BP.get_sensor(PORT_1, Color1);
-		white = Color1.ambient;
+		BP.get_sensor(PORT_3, Light3);
+		white = Light3.reflected;
 	}
 	cout << "Plaats op lijn en voer 'y' in.";
 	cin >> input;
 	if(input == 'y'){
-		BP.get_sensor(PORT_1, Color1);
-		black = Color1.ambient;
+		BP.get_sensor(PORT_3, Light3);
+		black = Light3.reflected;
 	}
 	return true;
 }
@@ -85,78 +85,70 @@ void manualDirection(int left=15, int right=15){
     BP.set_motor_dps(PORT_C, right);
 }
 
-int main(){
-  char inp;
-  signal(SIGINT, exit_signal_handler); // register the exit function for Ctrl+C
-  BP.detect(); // Make sure that the BrickPi3 is communicating and that the firmware is compatible with the drivers.
-  int error;
-  if(initialize()){
-	  cout << "Initialisatie gelukt!";
-  } else {
-	  cout << "Initialisatie mislukt...";
-	  return 1;
-  }
-  sensor_color_t      Color1;
-  sensor_ultrasonic_t Ultrasonic2;
-  sensor_light_t      Light3;
-  sensor_touch_t      Touch4;
-  int white;
-  int black;
-
-  if(calibrate(black, white, Color1)){
-	  cout << "Calibratie gelukt met " << black " als zwartwaarde en " << white << " als witwaarde";
-  } else {
-	  cout << "Calibratie mislukt. Nog 1 poging.";
-	  if(calibrate(black, white, Color1)){
-		  cout << "Calibratie gelukt met " << black " als zwartwaarde en " << white << " als witwaarde";
-	  } else {
-		  cout << "Calibratie mislukt...";
-		  return 1;
-	  }
-  }
-		  
-  while(true){
-	int prev=0;
-	if(BP.get_sensor(PORT_1, Color1) == 0 && BP.get_sensor(PORT_3, Light3) == 0){
-		//stop();
-	
-		if(Color1.ambient<black){
-			if(prev !=1){
-			stop();
-			//sleep(100000);
-			}
-			prev=1;
-			manualDirection(20,15);
-		cout <<"zwart";
-
-		}
-		else if(Color1.ambient <white && Color1.ambient>black){
-			if(prev !=2){
-			stop();
-			//usleep(100000);
-			}
-			prev=2;
-		cout<<"goed";
-
-			fwd(25);
-		}
-		else if(Color1.ambient >white){
-			if(prev !=3){
-			stop();
-			//usleep(100000);
-
-			}
-			prev=3;
-		cout<<"wit";
-
-
-			manualDirection(25,20);
-		}
-	     	cout << Color1.ambient << ", " << Light3.reflected << "\n";
-		usleep(102500);
+followPLine(int white, int black){
+	int midpoint = ( white - black ) / 2 + black;
+	int kp = 1;
+	int value;
+	int correction;
+	while(true){
+		BP.get_sensor(PORT_3, Light3);
+		value = Light3.reflected;
+		correction = kp * ( midpoint - value );
+		manualDirection(20+correction, 20-correction);
 	}
-  }
-  stop();
+}
+
+followPIDLine(int white, int black){
+	int midpoint = ( white - black ) / 2 + black;
+	int kp = 1;
+	int ki = 1;
+	int kd = 1;
+	int lasterror = 0;
+	int value;
+	int error;
+	int integral = 0;
+	int derivative;
+	int correction;
+	while(true){
+		BP.get_sensor(PORT_3, Light3);
+		value = Light3.reflected;
+		error = midpoint - value;
+		integral = error + integral;
+		derivative = error - lasterror;
+		correction = kp * error + ki * integral + kd * derivative;
+		manualDirection(20+correction, 20-correction);
+		lasterror = error;
+	}
+}
+
+int main(){
+	signal(SIGINT, exit_signal_handler); // register the exit function for Ctrl+C
+	BP.detect(); // Make sure that the BrickPi3 is communicating and that the firmware is compatible with the drivers.
+	int error;
+	if(initialize()){
+		cout << "Initialisatie gelukt!";
+	} else {
+		cout << "Initialisatie mislukt...";
+		return 1;
+	}
+	sensor_color_t      Color1;
+	sensor_ultrasonic_t Ultrasonic2;
+	sensor_light_t      Light3;
+	sensor_touch_t      Touch4;
+	int white;
+	int black;
+	if(calibrate(black, white, Light3)){
+		cout << "Calibratie gelukt met " << black " als zwartwaarde en " << white << " als witwaarde";
+	} else {
+		cout << "Calibratie mislukt. Nog 1 poging.";
+		if(calibrate(black, white, Light3)){
+			cout << "Calibratie gelukt met " << black " als zwartwaarde en " << white << " als witwaarde";
+		} else {
+			cout << "Calibratie mislukt...";
+			return 1;
+		}
+	}
+	followPLine(white, black);
 }
 
 // Signal handler that will be called when Ctrl+C is pressed to stop the program
