@@ -82,12 +82,8 @@ void square(int secs=2){
 }
 // De robot rijdt in een cirkel. Hoe kleiner de insideSpeed, hoe groter de radius.
 void circle(int duration=5, int speed=50, int insideSpeed=2){
-    for(unsigned int i=0;i<4;i++){
         BP.set_motor_power(PORT_B, speed);
         BP.set_motor_power(PORT_C, speed/insideSpeed);
-        sleep(duration);
-        stop();
-    }
 }
 
 void fwd(int speed=45){
