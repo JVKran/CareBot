@@ -142,13 +142,13 @@ void followPIDLine(int white, int colorWhite, int colorBlack, int black, sensor_
 			} else {
 				BP.get_sensor(PORT_3, Light3);
 				BP.get_sensor(PORT_1, Color1);
-				if(Light3.reflected < midpoint){
+				if (Color1.reflected_blue < colorMidpoint){
 					left();
-				} else if (Color1.reflected_blue < colorMidpoint){
-					right();
+				} else {
+					right();	
 				}
-				while(Color1.reflected_blue<colorMidpoint){
-					BP.get_sensor(PORT_1, Color1);
+				while(Light3.reflected<midpoint){
+					BP.get_sensor(PORT_3, Light3);
 				}
 				stop();
 			}
