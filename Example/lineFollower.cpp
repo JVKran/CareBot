@@ -100,7 +100,7 @@ void followPLine(int white, int black, sensor_light_t Light3){
 	}
 }
 
-void followPIDLine(int white, int black, sensor_light_t Light3){
+void followPIDLine(int white, int black, sensor_light_t Light3, sensor_color_t Color1){
 	int midpoint = ( white - black ) / 2 + black;
 	float kp = 0.8;
 	float ki = 0;
@@ -111,8 +111,10 @@ void followPIDLine(int white, int black, sensor_light_t Light3){
 	float integral = 0;
 	float derivative;
 	float correction;
+	char input;
 	while(true){
 		BP.get_sensor(PORT_3, Light3);
+		BP.get_sensor(PORT_1, Color1);
 		value = Light3.reflected;
 		error = midpoint - value;
 		integral = error + integral;
@@ -120,6 +122,20 @@ void followPIDLine(int white, int black, sensor_light_t Light3){
 		correction = kp * error + ki * integral + kd * derivative;
 		manualDirection(600+correction, 600-correction);
 		lasterror = error;
+		if(Color1.reflected < midpoint){
+			cin >> input;
+			if(input == 'l'){
+				left();
+			} else if (input == 'r'){
+				right();
+			}
+			if(input != ''){
+				while(Light3.reflected < midpoint){
+					BP.get_sensor(PORT_3, Light3);
+				}
+			}
+			manualDirection(600+correction, 600-correction);
+		}
 	}
 }
 
