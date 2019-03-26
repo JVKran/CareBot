@@ -22,22 +22,37 @@ bool initialize(){
 
 bool calibrate(int & black, int & colorBlack, int & white, int & colorWhite, sensor_light_t Light3, sensor_color_t Color1){
 	char input;
+	int light = 0;
+	int color = 0;
 	cout << "Plaats op achtergrond en voer 'y' in.";
 	cin >> input;
 	if(input == 'y'){
-		BP.get_sensor(PORT_3, Light3);
-		white = Light3.reflected;
-		BP.get_sensor(PORT_1, Color1);
-		colorWhite = Color1.reflected_blue;
+		for(unsigned int i = 0; i < 10; i++){
+			BP.get_sensor(PORT_3, Light3);
+			light+=Light3.reflected;
+			BP.get_sensor(PORT_1, Color1);
+			color+=Color1.reflected_blue;
+			usleep(100000);
+		}
 	}
+	// Doe meerdere lezingen en middel vervolgens om calibratie nauwkeuriger te maken.
+	white = light / 10;
+	colorWhite = color / 10;
+	light = 0;
+	color = 0;
 	cout << "\nPlaats op lijn en voer 'y' in.";
 	cin >> input;
 	if(input == 'y'){
-		BP.get_sensor(PORT_3, Light3);
-		black = Light3.reflected;
-		BP.get_sensor(PORT_1, Color1);
-		colorBlack = Color1.reflected_blue;
+		for(unsigned int i = 0; i < 10; i++){
+			BP.get_sensor(PORT_3, Light3);
+			light += Light3.reflected;
+			BP.get_sensor(PORT_1, Color1);
+			color += Color1.reflected_blue;
+			usleep(100000);
+		}
 	}
+	black = light / 10;
+	blackColor = color / 10;
 	cout << "\nGeef starstignaal (y)";
 	cin >> input;
 	if(input == 'y'){
