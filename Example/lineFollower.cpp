@@ -20,21 +20,31 @@ bool initialize(){
 	BP.set_motor_limits(PORT_C, 60, 0);
 }
 
-bool calibrate(int & black, int & white, sensor_light_t Light3){
+bool calibrate(int & black, int & colorBlack, int & white, int & colorWhite, sensor_light_t Light3, sensor_color_t Color1){
 	char input;
 	cout << "Plaats op achtergrond en voer 'y' in.";
 	cin >> input;
 	if(input == 'y'){
 		BP.get_sensor(PORT_3, Light3);
 		white = Light3.reflected;
+		BP.get_sensor(PORT_1, Color1);
+		colorWhite = Color1.reflected_blue;
 	}
 	cout << "Plaats op lijn en voer 'y' in.";
 	cin >> input;
 	if(input == 'y'){
 		BP.get_sensor(PORT_3, Light3);
 		black = Light3.reflected;
+		BP.get_sensor(PORT_1, Color1);
+		colorBlack = Color1.reflected_blue;
 	}
-	return true;
+	cout << "Geef starstignaal (y)";
+	cin >> input;
+	if(input == 'y'){
+		return true;
+	} else {
+		return false;
+	}
 }
 
 void stop(void){
@@ -71,7 +81,7 @@ void fwd(int speed=45){
 }
 
 void left(int speed=45){
-    BP.set_motor_dps(PORT_B, speed*1.07);
+    BP.set_motor_dps(PORT_B, speed);
     BP.set_motor_dps(PORT_C, -speed);
 }
 
@@ -85,24 +95,10 @@ void manualDirection(int left=15, int right=15){
     BP.set_motor_dps(PORT_C, right);
 }
 
-void followPLine(int white, int black, sensor_light_t Light3){
+void followPIDLine(int white, int colorWhite, int colorBlack, int black, sensor_light_t Light3, sensor_color_t Color1){
 	int midpoint = ( white - black ) / 2 + black;
-	float kp;
-	cout << "Geef een KP: ";
-	cin >> kp;
-	int value;
-	float correction;
-	while(true){
-		BP.get_sensor(PORT_3, Light3);
-		value = Light3.reflected;
-		correction = kp * ( midpoint - value );
-		manualDirection(200+correction, 200-correction);
-	}
-}
-
-void followPIDLine(int white, int black, sensor_light_t Light3, sensor_color_t Color1){
-	int midpoint = ( white - black ) / 2 + black;
-	float kp = 0.8;
+	int colorMidpoint = ( colorWhite- colorBlack) / 2 + colorBlack;
+	float kp = 0.7;
 	float ki = 0;
 	float kd = 0.002;
 	float lasterror = 0;
@@ -122,19 +118,30 @@ void followPIDLine(int white, int black, sensor_light_t Light3, sensor_color_t C
 		correction = kp * error + ki * integral + kd * derivative;
 		manualDirection(600+correction, 600-correction);
 		lasterror = error;
-		if(Color1.reflected < midpoint){
-			cin >> input;
-			if(input == 'l'){
-				left();
-			} else if (input == 'r'){
-				right();
-			}
-			if(input != ''){
-				while(Light3.reflected < midpoint){
+		if(Color1.reflected_blue < colorMidpoint){
+			BP.get_sensor(PORT_3, Light3);
+			if(Light3.reflected < midpoint){
+				stop();
+				fwd(25);
+				usleep(500000);
+				stop();
+				cout << "Geef richting op (l, r of f)";
+				cin >> input;
+				if(input == 'l'){
+					left();
+				} else if (input == 'r'){
+					right();
+				}  else if (input == 'f'){
+					fwd();
+				}
+				BP.get_sensor(PORT_3, Light3);
+				while(Light3.reflected<midpoint){
 					BP.get_sensor(PORT_3, Light3);
 				}
+				stop();
+			} else {
+				//Scherpebocht
 			}
-			manualDirection(600+correction, 600-correction);
 		}
 	}
 }
@@ -155,18 +162,20 @@ int main(){
 	sensor_touch_t      Touch4;
 	int white;
 	int black;
-	if(calibrate(black, white, Light3)){
+	int colorWhite;
+	int colorBlack;
+	if(calibrate(black, colorBlack, white, colorWhite, Light3, Color1)){
 		cout << "Calibratie gelukt met " << black << " als zwartwaarde en " << white << " als witwaarde";
 	} else {
 		cout << "Calibratie mislukt. Nog 1 poging.";
-		if(calibrate(black, white, Light3)){
+		if(calibrate(black, colorBlack, white, colorWhite, Light3, Color1)){
 			cout << "Calibratie gelukt met " << black << " als zwartwaarde en " << white << " als witwaarde";
 		} else {
 			cout << "Calibratie mislukt...";
 			return 1;
 		}
 	}
-	followPIDLine(white, black, Light3);
+	followPIDLine(white, colorWhite, colorBlack, black, Light3, Color1);
 }
 
 // Signal handler that will be called when Ctrl+C is pressed to stop the program
