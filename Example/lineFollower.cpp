@@ -30,7 +30,7 @@ bool calibrate(int & black, int & colorBlack, int & white, int & colorWhite, sen
 		BP.get_sensor(PORT_1, Color1);
 		colorWhite = Color1.reflected_blue;
 	}
-	cout << "Plaats op lijn en voer 'y' in.";
+	cout << "\nPlaats op lijn en voer 'y' in.";
 	cin >> input;
 	if(input == 'y'){
 		BP.get_sensor(PORT_3, Light3);
@@ -38,7 +38,7 @@ bool calibrate(int & black, int & colorBlack, int & white, int & colorWhite, sen
 		BP.get_sensor(PORT_1, Color1);
 		colorBlack = Color1.reflected_blue;
 	}
-	cout << "Geef starstignaal (y)";
+	cout << "\nGeef starstignaal (y)";
 	cin >> input;
 	if(input == 'y'){
 		return true;
@@ -96,8 +96,8 @@ void manualDirection(int left=15, int right=15){
 }
 
 void followPIDLine(int white, int colorWhite, int colorBlack, int black, sensor_light_t Light3, sensor_color_t Color1){
-	int midpoint = ( white - black ) / 2 + black;
-	int colorMidpoint = ( colorWhite- colorBlack) / 2 + colorBlack;
+	int midpoint = ( white - black ) / 2 + black;			//Midpoint lichtsensor
+	int colorMidpoint = ( colorWhite- colorBlack) / 2 + colorBlack;	//Midpoint kleurensensor
 	float kp = 0.7;
 	float ki = 0;
 	float kd = 0.002;
@@ -118,13 +118,16 @@ void followPIDLine(int white, int colorWhite, int colorBlack, int black, sensor_
 		correction = kp * error + ki * integral + kd * derivative;
 		manualDirection(600+correction, 600-correction);
 		lasterror = error;
-		if(Color1.reflected_blue < colorMidpoint || error > 250){
+		// Als er een brede lijn is (kruispunt) of er heel veel gecorigeerd moet worden (einde lijn/scherpe bocht)
+		if(Color1.reflected_blue < colorMidpoint || error > 280){
 			BP.get_sensor(PORT_3, Light3);
 			stop();
 			fwd(25);
+			// Rijd naar voren om op zijn plaats (x,y: 0,0) te draaien
 			usleep(500000);
 			stop();
 			if(Light3.reflected < midpoint){
+				// Als zowel de kleurensensor als lichtsensor zwart aangeeft, moet er sprake zijn van een kruispunt
 				cout << "Geef richting op (l, r of f)";
 				cin >> input;
 				if(input == 'l'){
@@ -134,12 +137,17 @@ void followPIDLine(int white, int colorWhite, int colorBlack, int black, sensor_
 				}  else if (input == 'f'){
 					fwd();
 				}
-				BP.get_sensor(PORT_3, Light3);
+				usleep(1000000);	//Negeer de eerste keer dat de lijn voorbijkomt
 				while(Light3.reflected<midpoint){
+					// Blijf draaien totdat er weer een lijn gevonden wordt.
 					BP.get_sensor(PORT_3, Light3);
+				}
+				if(input=='l'){
+					usleep(500000);		//Wacht nog 0,5 seconden om over de lijn heen te draaien
 				}
 				stop();
 			} else {
+				// Sprake van een scherpe bocht
 				BP.get_sensor(PORT_3, Light3);
 				BP.get_sensor(PORT_1, Color1);
 				if (Color1.reflected_blue < colorMidpoint){
@@ -147,8 +155,12 @@ void followPIDLine(int white, int colorWhite, int colorBlack, int black, sensor_
 				} else {
 					right();
 				}
+				usleep(1000000);
 				while(Light3.reflected<midpoint){
 					BP.get_sensor(PORT_3, Light3);
+				}
+				if(input=='l'){
+					usleep(500000);		//Wacht nog 0,5 seconden om over de lijn heen te draaien
 				}
 				stop();
 			}
@@ -164,7 +176,8 @@ int main(){
 		cout << "Initialisatie gelukt!";
 	} else {
 		cout << "Initialisatie mislukt...";
-		return 1;
+		BP.reset_all();
+		exit(-2);
 	}
 	sensor_color_t      Color1;
 	sensor_ultrasonic_t Ultrasonic2;
@@ -175,14 +188,15 @@ int main(){
 	int colorWhite;
 	int colorBlack;
 	if(calibrate(black, colorBlack, white, colorWhite, Light3, Color1)){
-		cout << "Calibratie gelukt met " << black << " als zwartwaarde en " << white << " als witwaarde";
+		cout << "Calibratie gelukt met " << black << " en " << colorBlack << " als zwartwaarden en " << white << " en " << colorWhite << " als witwaarden.\n";
 	} else {
 		cout << "Calibratie mislukt. Nog 1 poging.";
 		if(calibrate(black, colorBlack, white, colorWhite, Light3, Color1)){
-			cout << "Calibratie gelukt met " << black << " als zwartwaarde en " << white << " als witwaarde";
+			cout << "Calibratie gelukt met " << black << " en " << colorBlack << " als zwartwaarden en " << white << " en " << colorWhite << " als witwaarden.\n";
 		} else {
 			cout << "Calibratie mislukt...";
-			return 1;
+			BP.reset_all();
+			exit(-2);
 		}
 	}
 	followPIDLine(white, colorWhite, colorBlack, black, Light3, Color1);
