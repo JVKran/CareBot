@@ -118,13 +118,13 @@ void followPIDLine(int white, int colorWhite, int colorBlack, int black, sensor_
 		correction = kp * error + ki * integral + kd * derivative;
 		manualDirection(600+correction, 600-correction);
 		lasterror = error;
-		if(Color1.reflected_blue < colorMidpoint){
+		if(Color1.reflected_blue < colorMidpoint || error > 250){
 			BP.get_sensor(PORT_3, Light3);
+			stop();
+			fwd(25);
+			usleep(500000);
+			stop();
 			if(Light3.reflected < midpoint){
-				stop();
-				fwd(25);
-				usleep(500000);
-				stop();
 				cout << "Geef richting op (l, r of f)";
 				cin >> input;
 				if(input == 'l'){
