@@ -140,7 +140,17 @@ void followPIDLine(int white, int colorWhite, int colorBlack, int black, sensor_
 				}
 				stop();
 			} else {
-				//Scherpebocht
+				BP.get_sensor(PORT_3, Light3);
+				if(Light3.reflected < midpoint){
+					left();
+				} else if (Color1.reflected_blue < colorMidpoint){
+					right();
+				}
+				BP.get_sensor(PORT_3, Light3);
+				while(Light3.reflected<midpoint){
+					BP.get_sensor(PORT_3, Light3);
+				}
+				stop();
 			}
 		}
 	}
