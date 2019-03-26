@@ -20,7 +20,7 @@ bool initialize(){
 	BP.set_motor_limits(PORT_C, 60, 0);
 }
 
-bool calibrate(int & blak, int & white, sensor_light_t Light3){
+bool calibrate(int & black, int & white, sensor_light_t Light3){
 	char input;
 	cout << "Plaats op achtergrond en voer 'y' in.";
 	cin >> input;
@@ -85,30 +85,32 @@ void manualDirection(int left=15, int right=15){
     BP.set_motor_dps(PORT_C, right);
 }
 
-followPLine(int white, int black){
+void followPLine(int white, int black, sensor_light_t Light3){
 	int midpoint = ( white - black ) / 2 + black;
-	int kp = 1;
+	float kp;
+	cout << "Geef een KP: ";
+	cin >> kp;
 	int value;
-	int correction;
+	float correction;
 	while(true){
 		BP.get_sensor(PORT_3, Light3);
 		value = Light3.reflected;
 		correction = kp * ( midpoint - value );
-		manualDirection(20+correction, 20-correction);
+		manualDirection(200+correction, 200-correction);
 	}
 }
 
-followPIDLine(int white, int black){
+void followPIDLine(int white, int black, sensor_light_t Light3){
 	int midpoint = ( white - black ) / 2 + black;
-	int kp = 1;
-	int ki = 1;
-	int kd = 1;
-	int lasterror = 0;
-	int value;
-	int error;
-	int integral = 0;
-	int derivative;
-	int correction;
+	float kp = 0.8;
+	float ki = 0;
+	float kd = 0.002;
+	float lasterror = 0;
+	float value;
+	float error;
+	float integral = 0;
+	float derivative;
+	float correction;
 	while(true){
 		BP.get_sensor(PORT_3, Light3);
 		value = Light3.reflected;
@@ -116,7 +118,7 @@ followPIDLine(int white, int black){
 		integral = error + integral;
 		derivative = error - lasterror;
 		correction = kp * error + ki * integral + kd * derivative;
-		manualDirection(20+correction, 20-correction);
+		manualDirection(600+correction, 600-correction);
 		lasterror = error;
 	}
 }
@@ -125,7 +127,7 @@ int main(){
 	signal(SIGINT, exit_signal_handler); // register the exit function for Ctrl+C
 	BP.detect(); // Make sure that the BrickPi3 is communicating and that the firmware is compatible with the drivers.
 	int error;
-	if(initialize()){
+	if(!initialize()){
 		cout << "Initialisatie gelukt!";
 	} else {
 		cout << "Initialisatie mislukt...";
@@ -138,17 +140,17 @@ int main(){
 	int white;
 	int black;
 	if(calibrate(black, white, Light3)){
-		cout << "Calibratie gelukt met " << black " als zwartwaarde en " << white << " als witwaarde";
+		cout << "Calibratie gelukt met " << black << " als zwartwaarde en " << white << " als witwaarde";
 	} else {
 		cout << "Calibratie mislukt. Nog 1 poging.";
 		if(calibrate(black, white, Light3)){
-			cout << "Calibratie gelukt met " << black " als zwartwaarde en " << white << " als witwaarde";
+			cout << "Calibratie gelukt met " << black << " als zwartwaarde en " << white << " als witwaarde";
 		} else {
 			cout << "Calibratie mislukt...";
 			return 1;
 		}
 	}
-	followPLine(white, black);
+	followPIDLine(white, black, Light3);
 }
 
 // Signal handler that will be called when Ctrl+C is pressed to stop the program
