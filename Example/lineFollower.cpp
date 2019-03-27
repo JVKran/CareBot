@@ -16,8 +16,8 @@ bool initialize(){
 	BP.set_sensor_type(PORT_3, SENSOR_TYPE_NXT_LIGHT_ON);
 	BP.set_sensor_type(PORT_4, SENSOR_TYPE_TOUCH);
 	BP.set_sensor_type(PORT_2, SENSOR_TYPE_NXT_ULTRASONIC);
-	BP.set_motor_limits(PORT_B, 60, 0);
-	BP.set_motor_limits(PORT_C, 60, 0);
+	BP.set_motor_limits(PORT_B, 100, 0);
+	BP.set_motor_limits(PORT_C, 100, 0);
 }
 
 bool calibrate(int & black, int & colorBlack, int & white, int & colorWhite, sensor_light_t Light3, sensor_color_t Color1){
@@ -94,6 +94,18 @@ void fwd(int speed=45){
 void left(int speed=45){
     BP.set_motor_dps(PORT_B, speed*1.07);
     BP.set_motor_dps(PORT_C, -speed);
+}
+
+void solidLeft(){
+	BP.set_motor_dps(PORT_B, 45);
+        BP.set_motor_dps(PORT_C, -45);
+        usleep(700000);
+}
+
+void solidRight(){
+	BP.set_motor_dps(PORT_B, -45);
+        BP.set_motor_dps(PORT_C, 45);
+        usleep(700000);	
 }
 
 void right(int speed=45){
