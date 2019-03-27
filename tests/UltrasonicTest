@@ -1,0 +1,56 @@
+if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 10){
+		// Als de afstand kleiner is dan 10cm, draai dan naar rechts, maak een cirkel naar links
+		// totdat de lijn wordt herkend. Rijd iets door zodat het op zijn plaats naar rechts draait. Hervat vervolgens.
+		//#include <chrono> Niet vergeten
+
+		//right();	//draait naar rechts om het voorwerp te ontwijken
+		BP.set_motor_power(PORT_B, -400);
+    		BP.set_motor_power(PORT_C, 400);
+		sleep(2);
+
+		//checked of er geen voorwerp zichtbaar is en het lijntje ook niet en blijft net zolang
+		//de bocht maken tot het wel een voorwerp ziet of een lijntje
+		auto start = std::chrono::high_resolution_clock::now();		//start timer
+
+		while(BP.get_sensor(PORT_2, Ultrasonic2) != 0 && Ultrasonic2.cm < 10 || Light3.reflected>=midpoint){
+			circle(100,2);
+			usleep(200000);
+		}
+	
+		auto finish = std::chrono::high_resolution_clock::now();	//stopt de timer
+		std::chrono::duration<double> elapsed = finish - start;		//berekent de tijd
+		int time = elapsed.count() *1000000;
+
+		//checked of het een voorwerp is dat de while loop heeft gestopt en rijd daarna
+		//terug naar zijn begin positie voor het voorwerp
+		if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 10){
+			stop();
+			circle(-100,2);			//rijd de cirkel omgekeerd
+			usleep(time);	
+			stop();
+			left();
+			sleep(10);
+		
+			while(BP.get_sensor(PORT_2, Ultrasonic2) != 0 && Ultrasonic2.cm < 10 || Light3.reflected>=midpoint){	
+				BP.set_motor_power(PORT_C, 100);
+    		    		BP.set_motor_power(PORT_B, 100/2);
+				usleep(200000);
+			}	
+		}
+			
+		while(Light3.reflected<midpoint){
+			BP.get_sensor(PORT_3, Light3);
+		}
+		
+		//geen idee waarvoor deze code is :)	
+		stop();
+		fwd(25);
+		// Rijd naar voren om op zijn plaats (x,y: 0,0) te draaien
+		usleep(500000);
+		stop();
+		right();
+		sleep(1);
+		stop();
+		}
+	}
+}
