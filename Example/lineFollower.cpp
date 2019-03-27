@@ -154,9 +154,9 @@ void followPIDLine(int white, int colorWhite, int colorBlack, int black, sensor_
 				cout << "Geef richting op (l, r of f)";
 				cin >> input;
 				if(input == 'l'){
-					left();
+					solidLeft();
 				} else if (input == 'r'){
-					right();
+					solidRight();
 				}  else if (input == 'f'){
 					fwd();
 				}
@@ -175,9 +175,9 @@ void followPIDLine(int white, int colorWhite, int colorBlack, int black, sensor_
 				BP.get_sensor(PORT_1, Color1);
 				if (Color1.reflected_blue < colorMidpoint){
 					input = 'l';
-					left();
+					solidLeft();
 				} else {
-					right();
+					solidRight();
 				}
 				usleep(1000000);
 				while(Light3.reflected<midpoint){
