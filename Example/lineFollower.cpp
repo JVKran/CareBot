@@ -143,7 +143,7 @@ void followPIDLine(int white, int colorWhite, int colorBlack, int black, sensor_
 		if(Color1.reflected_blue < colorMidpoint || error > 280){
 			BP.get_sensor(PORT_3, Light3);
 			stop();
-			fwd(25);
+			fwd(40);
 			// Rijd naar voren om op zijn plaats (x,y: 0,0) te draaien
 			usleep(500000);
 			stop();
