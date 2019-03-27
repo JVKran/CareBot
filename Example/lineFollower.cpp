@@ -52,7 +52,7 @@ bool calibrate(int & black, int & colorBlack, int & white, int & colorWhite, sen
 		}
 	}
 	black = light / 10;
-	blackColor = color / 10;
+	colorBlack = color / 10;
 	cout << "\nGeef starstignaal (y)";
 	cin >> input;
 	if(input == 'y'){
