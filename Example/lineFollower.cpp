@@ -96,16 +96,14 @@ void left(int speed=45){
     BP.set_motor_dps(PORT_C, -speed);
 }
 
-void solidLeft(){
-	BP.set_motor_dps(PORT_B, 45);
-        BP.set_motor_dps(PORT_C, -45);
-        usleep(700000);
+void solidLeft(int speed=45){
+	BP.set_motor_dps(PORT_B, speed*1.07);
+        BP.set_motor_dps(PORT_C, -speed);
 }
 
-void solidRight(){
-	BP.set_motor_dps(PORT_B, -45);
-        BP.set_motor_dps(PORT_C, 45);
-        usleep(700000);	
+void solidRight(int speed=45){
+	BP.set_motor_dps(PORT_B, -speed*1.07);
+        BP.set_motor_dps(PORT_C, speed);
 }
 
 void right(int speed=45){
