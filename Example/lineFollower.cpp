@@ -238,6 +238,25 @@ void followPIDLine(int white, int colorWhite, int colorBlack, int black, sensor_
 				stop();
 			}
 		}
+		if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 10){
+			// Als de afstand kleiner is dan 10cm, draai dan naar rechts, maak een cirkel naar links
+			// totdat de lijn wordt herkend. Rijd iets door zodat het op zijn plaats naar rechts draait. Hervat vervolgens.
+			solidRight(200);
+			usleep(2000000);
+			circle(100,2);
+			while(Light3.reflected>midpoint){			// Misschien vergoper verkeerd om
+				BP.get_sensor(PORT_3, Light3);
+			}
+			cout << "Lijn na obstakel gevonden\n";
+			stop();
+			fwd(25);
+			// Rijd naar voren om op zijn plaats (x,y: 0,0) te draaien
+			usleep(500000);
+			stop();
+			right(200);
+			usleep(2000000);
+			stop();
+		}
 	}
 }
 
