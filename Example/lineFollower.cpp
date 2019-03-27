@@ -10,7 +10,14 @@ BrickPi3 BP;
 
 void exit_signal_handler(int signo);
 
-bool initialize(){	
+bool initialize(){
+	if(BP.get_voltage_battery() < 10.85){
+		cout << "Batterijspanning is te laag! Namelijk " << BP.get_voltage_battery() << "V. Script wordt getermineerd." << endl << endl;
+		BP.reset_all();
+		exit(-2);
+	} else {
+		cout << "Batterijspanning is goed. Namelijk " << BP.get_voltage_battery() << "V." << endl << endl;
+	}
 	BP.set_sensor_type(PORT_1, SENSOR_TYPE_NXT_COLOR_FULL);
 	BP.set_sensor_type(PORT_2, SENSOR_TYPE_NXT_ULTRASONIC);
 	BP.set_sensor_type(PORT_3, SENSOR_TYPE_NXT_LIGHT_ON);
@@ -24,9 +31,9 @@ bool calibrate(int & black, int & colorBlack, int & white, int & colorWhite, sen
 	char input;
 	int light = 0;
 	int color = 0;
-	cout << "Plaats op achtergrond en voer 'y' in.";
+	cout << "\nPlaats op achtergrond en voer 'y' in.";
 	cin >> input;
-	if(input == 'y'){
+	if(input == 'y' ){
 		for(unsigned int i = 0; i < 10; i++){
 			BP.get_sensor(PORT_3, Light3);
 			light+=Light3.reflected;
@@ -119,7 +126,7 @@ void manualDirection(int left=15, int right=15){
 void followPIDLine(int white, int colorWhite, int colorBlack, int black, sensor_light_t Light3, sensor_color_t Color1){
 	int midpoint = ( white - black ) / 2 + black;			//Midpoint lichtsensor
 	int colorMidpoint = ( colorWhite- colorBlack) / 2 + colorBlack;	//Midpoint kleurensensor
-	float kp = 1.5;
+	float kp = 1.4;
 	float ki = 0;
 	float kd = 0.002;
 	float lasterror = 0;
@@ -140,6 +147,7 @@ void followPIDLine(int white, int colorWhite, int colorBlack, int black, sensor_
 		manualDirection(600+correction, 600-correction);
 		lasterror = error;
 		// Als er een brede lijn is (kruispunt) of er heel veel gecorigeerd moet worden (einde lijn/scherpe bocht)
+		cout << "Loopje"<<endl;
 		if(Color1.reflected_blue < colorMidpoint || error > 280){
 			BP.get_sensor(PORT_3, Light3);
 			stop();
@@ -147,18 +155,18 @@ void followPIDLine(int white, int colorWhite, int colorBlack, int black, sensor_
 			// Rijd naar voren om op zijn plaats (x,y: 0,0) te draaien
 			usleep(500000);
 			stop();
-			if(Light3.reflected < midpoint){
+			if(Light3.reflected > midpoint){
 				// Als zowel de kleurensensor als lichtsensor zwart aangeeft, moet er sprake zijn van een kruispunt
 				cout << "Geef richting op (l, r of f)";
 				cin >> input;
 				if(input == 'l'){
-					solidLeft();
+					solidLeft(200);
 				} else if (input == 'r'){
-					solidRight();
+					solidRight(200);
 				}  else if (input == 'f'){
-					fwd();
+					continue;
 				}
-				usleep(1000000);	//Negeer de eerste keer dat de lijn voorbijkomt
+				usleep(1500000);	//Negeer de eerste keer dat de lijn voorbijkomt
 				while(Light3.reflected<midpoint){
 					// Blijf draaien totdat er weer een lijn gevonden wordt.
 					BP.get_sensor(PORT_3, Light3);
@@ -169,15 +177,15 @@ void followPIDLine(int white, int colorWhite, int colorBlack, int black, sensor_
 				stop();
 			} else {
 				// Sprake van een scherpe bocht
+				cout << "Scherpe bocht";
 				BP.get_sensor(PORT_3, Light3);
 				BP.get_sensor(PORT_1, Color1);
 				if (Color1.reflected_blue < colorMidpoint){
 					input = 'l';
-					solidLeft();
+					solidLeft(200);
 				} else {
-					solidRight();
+					solidRight(200);
 				}
-				usleep(1000000);
 				while(Light3.reflected<midpoint){
 					BP.get_sensor(PORT_3, Light3);
 				}
