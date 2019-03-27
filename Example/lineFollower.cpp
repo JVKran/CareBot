@@ -81,7 +81,7 @@ void square(int secs=2){
     }
 }
 // De robot rijdt in een cirkel. Hoe kleiner de insideSpeed, hoe groter de radius.
-void circle(int duration=5, int speed=50, int insideSpeed=2){
+void circle(int speed=50, int insideSpeed=2){
         BP.set_motor_power(PORT_B, speed);
         BP.set_motor_power(PORT_C, speed/insideSpeed);
 }
@@ -92,7 +92,7 @@ void fwd(int speed=45){
 }
 
 void left(int speed=45){
-    BP.set_motor_dps(PORT_B, speed);
+    BP.set_motor_dps(PORT_B, speed*1.07);
     BP.set_motor_dps(PORT_C, -speed);
 }
 
@@ -109,7 +109,7 @@ void manualDirection(int left=15, int right=15){
 void followPIDLine(int white, int colorWhite, int colorBlack, int black, sensor_light_t Light3, sensor_color_t Color1){
 	int midpoint = ( white - black ) / 2 + black;			//Midpoint lichtsensor
 	int colorMidpoint = ( colorWhite- colorBlack) / 2 + colorBlack;	//Midpoint kleurensensor
-	float kp = 0.7;
+	float kp = 1.5;
 	float ki = 0;
 	float kd = 0.002;
 	float lasterror = 0;
@@ -154,7 +154,7 @@ void followPIDLine(int white, int colorWhite, int colorBlack, int black, sensor_
 					BP.get_sensor(PORT_3, Light3);
 				}
 				if(input=='l'){
-					usleep(500000);		//Wacht nog 0,5 seconden om over de lijn heen te draaien
+					usleep(750000);		//Wacht nog 0,5 seconden om over de lijn heen te draaien
 				}
 				stop();
 			} else {
@@ -162,6 +162,7 @@ void followPIDLine(int white, int colorWhite, int colorBlack, int black, sensor_
 				BP.get_sensor(PORT_3, Light3);
 				BP.get_sensor(PORT_1, Color1);
 				if (Color1.reflected_blue < colorMidpoint){
+					input = 'l';
 					left();
 				} else {
 					right();
@@ -175,24 +176,6 @@ void followPIDLine(int white, int colorWhite, int colorBlack, int black, sensor_
 				}
 				stop();
 			}
-		}
-		if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 10){
-			// Als de afstand kleiner is dan 10cm, draai dan naar rechts, maak een cirkel naar links
-			// totdat de lijn wordt herkend. Rijd iets door zodat het op zijn plaats naar rechts draait. Hervat vervolgens.
-			right();
-			sleep(1);
-			circle();
-			while(Light3.reflected<midpoint){
-				BP.get_sensor(PORT_3, Light3);
-			}
-			stop();
-			fwd(25);
-			// Rijd naar voren om op zijn plaats (x,y: 0,0) te draaien
-			usleep(500000);
-			stop();
-			right();
-			sleep(1);
-			stop();
 		}
 	}
 }
