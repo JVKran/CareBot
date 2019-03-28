@@ -29,27 +29,40 @@ void fwd(int speed=45){
     BP.set_motor_power(PORT_C, speed);
 }
 
-int main(){
-    signal(SIGINT, exit_signal_handler); // register the exit function for Ctrl+C
-    BP.detect(); // Make sure that the BrickPi3 is communicating and that the firmware is compatible with the drivers.
-
-    if(!initialize()){
-        cout << "Initialisatie gelukt!";
-    } else {
-        cout << "Initialisatie mislukt...";
-        BP.reset_all();
-        exit(-2);
+void detect(sensor_ultrasonic_t Ultrasonic2){
+    while(true){
+        if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 6){
+            stop();
+            else{
+                fwd();
+            }
+        }
     }
-    sensor_color_t      Color1;
-    sensor_ultrasonic_t Ultrasonic2;
-    sensor_light_t      Light3;
-    sensor_touch_t      Touch4;
-}
+
+    int main(){
+        signal(SIGINT, exit_signal_handler); // register the exit function for Ctrl+C
+        BP.detect(); // Make sure that the BrickPi3 is communicating and that the firmware is compatible with the drivers.
+
+        if(!initialize()){
+            cout << "Initialisatie gelukt!";
+        } else {
+            cout << "Initialisatie mislukt...";
+            BP.reset_all();
+            exit(-2);
+        }
+        sensor_color_t      Color1;
+        sensor_ultrasonic_t Ultrasonic2;
+        sensor_light_t      Light3;
+        sensor_touch_t      Touch4;
+        detect();
+
+
+    }
 
 // Signal handler that will be called when Ctrl+C is pressed to stop the program
-void exit_signal_handler(int signo){
-    if(signo == SIGINT){
-        BP.reset_all();    // Reset everything so there are no run-away motors
-        exit(-2);
+    void exit_signal_handler(int signo){
+        if(signo == SIGINT){
+            BP.reset_all();    // Reset everything so there are no run-away motors
+            exit(-2);
+        }
     }
-}
