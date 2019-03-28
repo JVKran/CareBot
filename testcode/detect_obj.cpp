@@ -33,8 +33,8 @@ void detect(sensor_ultrasonic_t Ultrasonic2){
     while(true){
         if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 6){
             stop();
-            else{
-                fwd();
+         else{
+            fwd();
             }
         }
     }
