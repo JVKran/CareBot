@@ -10,6 +10,16 @@ BrickPi3 BP;
 
 void exit_signal_handler(int signo);
 
+void fwd(int speed=45){
+    BP.set_motor_power(PORT_B, speed*1.07); //ivm ongelijkheid motoren.
+    BP.set_motor_power(PORT_C, speed);
+}
+
+void stop(void){
+	BP.set_motor_power(PORT_B, 0);
+    	BP.set_motor_power(PORT_C, 0);
+}
+
 bool initialize(){
 	if(BP.get_voltage_battery() < 10.85){
 		cout << "Batterijspanning is te laag! Namelijk " << BP.get_voltage_battery() << "V. Script wordt getermineerd." << endl << endl;
@@ -31,48 +41,6 @@ bool calibrate(int & black, int & colorBlack, int & white, int & colorWhite, sen
 	char input;
 	int light = 0;
 	int color = 0;
-	cout << "\nPlaats op achtergrond en voer 'y' in.";
-	cin >> input;
-	if(input == 'y' ){
-		for(unsigned int i = 0; i < 10; i++){
-			BP.get_sensor(PORT_3, Light3);
-			light+=Light3.reflected;
-			BP.get_sensor(PORT_1, Color1);
-			color+=Color1.reflected_blue;
-			usleep(100000);
-		}
-	}
-	// Doe meerdere lezingen en middel vervolgens om calibratie nauwkeuriger te maken.
-	white = light / 10;
-	colorWhite = color / 10;
-	light = 0;
-	color = 0;
-	cout << "\nPlaats op lijn en voer 'y' in.";
-	cin >> input;
-	if(input == 'y'){
-		for(unsigned int i = 0; i < 10; i++){
-			BP.get_sensor(PORT_3, Light3);
-			light += Light3.reflected;
-			BP.get_sensor(PORT_1, Color1);
-			color += Color1.reflected_blue;
-			usleep(100000);
-		}
-	}
-	black = light / 10;
-	colorBlack = color / 10;
-	cout << "\nGeef starstignaal (y)";
-	cin >> input;
-	if(input == 'y'){
-		return true;
-	} else {
-		return false;
-	}
-}
-
-bool autoCalibrate(int & black, int & colorBlack, int & white, int & colorWhite, sensor_light_t Light3, sensor_color_t Color1){
-	char input;
-	int light = 0;
-	int color = 0;
 	cout << "Calibratie voor witwaarden ";
 	for(unsigned int i = 0; i < 10; i++){
 		BP.get_sensor(PORT_3, Light3);
@@ -84,14 +52,14 @@ bool autoCalibrate(int & black, int & colorBlack, int & white, int & colorWhite,
 	white = light / 10;
 	colorWhite = color / 10;
 	cout << white << " en " << colorWhite << "."<< endl;
-	fwd(10);
+	fwd(25);
 	light = 0;
 	color = 0;
-	while(Light3.reflected>white-100){
+	while(Light3.reflected<white+400){
 		// Blijf rijden totdat het donker is (er een lijn is).
 		BP.get_sensor(PORT_3, Light3);
 	}
-	usleep(500000);
+	usleep(200000);
 	stop();
 	cout << "Calibratie voor zwartwaarden ";
 	for(unsigned int i = 0; i < 10; i++){
@@ -104,17 +72,15 @@ bool autoCalibrate(int & black, int & colorBlack, int & white, int & colorWhite,
 	black = light / 10;
 	colorBlack = color / 10;
 	cout << black << " en " << colorBlack << "." << endl;
-	if(white - black > 100){
+	fwd(25);
+	usleep(400000);
+	if(abs(white - black) > 40){
 		return true;
 	} else {
 		return false;
 	}
 }
 
-void stop(void){
-	BP.set_motor_power(PORT_B, 0);
-    	BP.set_motor_power(PORT_C, 0);
-}
 
 // De robot rijdt in een vierkant. secs bepaalt hoelang de robot rechtdoor rijdt
 void square(int secs=2){
@@ -133,11 +99,6 @@ void square(int secs=2){
 void circle(int speed=50, int insideSpeed=2){
         BP.set_motor_power(PORT_B, speed);
         BP.set_motor_power(PORT_C, speed/insideSpeed);
-}
-
-void fwd(int speed=45){
-    BP.set_motor_power(PORT_B, speed*1.07); //ivm ongelijkheid motoren.
-    BP.set_motor_power(PORT_C, speed);
 }
 
 void left(int speed=45){
@@ -165,7 +126,7 @@ void manualDirection(int left=15, int right=15){
     BP.set_motor_dps(PORT_C, right);
 }
 
-void followPIDLine(int white, int colorWhite, int colorBlack, int black, sensor_light_t Light3, sensor_color_t Color1){
+void followPIDLine(int white, int colorWhite, int colorBlack, int black, sensor_light_t Light3, sensor_color_t Color1, sensor_ultrasonic_t Ultrasonic2){
 	cout << "Lijnvolger gestart!";
 	int midpoint = ( white - black ) / 2 + black;			//Midpoint lichtsensor
 	int colorMidpoint = ( colorWhite- colorBlack) / 2 + colorBlack;	//Midpoint kleurensensor
@@ -285,9 +246,8 @@ int main(){
 		cout << "Calibratie mislukt. Programma wordt getermineerd";
 		BP.reset_all();
 		exit(-2);
-		}
 	}
-	followPIDLine(white, colorWhite, colorBlack, black, Light3, Color1);
+	followPIDLine(white, colorWhite, colorBlack, black, Light3, Color1, Ultrasonic2);
 }
 
 // Signal handler that will be called when Ctrl+C is pressed to stop the program
