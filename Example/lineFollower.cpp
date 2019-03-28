@@ -334,7 +334,7 @@ void manualDirection(int left=15, int right=15){
 
     BP.set_motor_dps(PORT_B, left*1.07);
 
-    BP.set_motor_dps(PORT_C, right);
+   BP.set_motor_dps(PORT_C, right);
 
 }
 
@@ -348,7 +348,7 @@ void followPIDLine(int white, int colorWhite, int colorBlack, int black, sensor_
 
              int colorMidpoint = ( colorWhite- colorBlack) / 2 + colorBlack;   //Midpoint kleurensensor
 
-             float kp = 0.8;
+             float kp = 1.2;
 
              float ki = 0;
 
@@ -510,19 +510,21 @@ void followPIDLine(int white, int colorWhite, int colorBlack, int black, sensor_
 
                                        stop();
 
-                                       fwd(25);
+                                       BP.get_sensor(PORT_3, Light3);
 
-                                       // Rijd naar voren om op zijn plaats (x,y: 0,0) te draaien
+                                       solidRight(200);
 
-                                       usleep(500000);
+                                       while(Light3.reflected<midpoint){
 
-                                       stop();
+                                                    // Blijf draaien totdat er weer een lijn gevonden wordt.
 
-                                       right(200);
+                                                    BP.get_sensor(PORT_3, Light3);
 
-                                       usleep(2000000);
+                                       }
 
-                                       stop();
+                                       cout<<"turned";
+
+                                       //usleep(1500000);
 
                           }
 
