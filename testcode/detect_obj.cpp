@@ -3,7 +3,7 @@
 #include <unistd.h>     	// for sleep
 #include <signal.h>     	// for catching exit signals
 #include <iomanip>		// for setw and setprecision
-
+#include <chrono>    		// To count elapsed time
 
 using namespace std;
 
@@ -31,43 +31,44 @@ void fwd(int speed=45){
     BP.set_motor_power(PORT_C, speed);
 }
 
-//wordt gebruikt om te controleren of er een object is en anders rijd het rechtdoor
 void detect(sensor_ultrasonic_t Ultrasonic2){
     while(true){
-        //checked of er een object 5 cm voor zich staat
-        if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 6){
-            stop();     //zet alle motoren naar power 0
-        }
-         else{          //als er geen voorwerp staat rijd het rechtdoor
-            fwd();      //rijd naar voren
+        fwd();
+
+        if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 10){
+            stop();
+            while(Ultrasonic2.cm <10){
+                BP.get_sensor(PORT_2, Ultrasonic2);
             }
+            fwd();
         }
     }
+}
 
-    int main(){
-        signal(SIGINT, exit_signal_handler); // register the exit function for Ctrl+C
-        BP.detect(); // Make sure that the BrickPi3 is communicating and that the firmware is compatible with the drivers.
+int main(){
+    signal(SIGINT, exit_signal_handler); // register the exit function for Ctrl+C
+    BP.detect(); // Make sure that the BrickPi3 is communicating and that the firmware is compatible with the drivers.
 
-        if(!initialize()){
-            cout << "Initialisatie gelukt!";
-        } else {
-            cout << "Initialisatie mislukt...";
-            BP.reset_all();
-            exit(-2);
-        }
-        sensor_color_t      Color1;
-        sensor_ultrasonic_t Ultrasonic2;
-        sensor_light_t      Light3;
-        sensor_touch_t      Touch4;
-        detect(Ultrasonic2);
-
-
+    if(!initialize()){
+        cout << "Initialisatie gelukt!";
+    } else {
+        cout << "Initialisatie mislukt...";
+        BP.reset_all();
+        exit(-2);
     }
+    sensor_color_t      Color1;
+    sensor_ultrasonic_t Ultrasonic2;
+    sensor_light_t      Light3;
+    sensor_touch_t      Touch4;
+    detect(Ultrasonic2);
+
+
+}
 
 // Signal handler that will be called when Ctrl+C is pressed to stop the program
-    void exit_signal_handler(int signo){
-        if(signo == SIGINT){
-            BP.reset_all();    // Reset everything so there are no run-away motors
-            exit(-2);
-        }
+void exit_signal_handler(int signo){
+    if(signo == SIGINT){
+        BP.reset_all();    // Reset everything so there are no run-away motors
+        exit(-2);
     }
+}
