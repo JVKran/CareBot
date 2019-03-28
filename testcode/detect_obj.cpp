@@ -29,13 +29,15 @@ void fwd(int speed=45){
     BP.set_motor_power(PORT_C, speed);
 }
 
+//wordt gebruikt om te controleren of er een object is en anders rijd het rechtdoor
 void detect(sensor_ultrasonic_t Ultrasonic2){
     while(true){
+        //checked of er een object 5 cm voor zich staat
         if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 6){
-            stop();
+            stop();     //zet alle motoren naar power 0
         }
-         else{
-            fwd();
+         else{          //als er geen voorwerp staat rijd het rechtdoor
+            fwd();      //rijd naar voren
             }
         }
     }
