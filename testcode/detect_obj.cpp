@@ -1,3 +1,5 @@
+#include "BrickPi3.h" 		// for BrickPi3
+#include <iostream>
 #include <unistd.h>     	// for sleep
 #include <signal.h>     	// for catching exit signals
 #include <iomanip>		// for setw and setprecision
@@ -57,7 +59,7 @@ void detect(sensor_ultrasonic_t Ultrasonic2){
         sensor_ultrasonic_t Ultrasonic2;
         sensor_light_t      Light3;
         sensor_touch_t      Touch4;
-        detect();
+        detect(Ultrasonic2);
 
 
     }
