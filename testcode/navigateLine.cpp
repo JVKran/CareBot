@@ -85,24 +85,9 @@ void manualDirection(int left=15, int right=15){
     BP.set_motor_dps(PORT_C, right);
 }
 
-void followPLine(int white, int black, sensor_light_t Light3){
-    int midpoint = ( white - black ) / 2 + black;
-    float kp;
-    cout << "Geef een KP: ";
-    cin >> kp;
-    int value;
-    float correction;
-    while(true){
-        BP.get_sensor(PORT_3, Light3);
-        value = Light3.reflected;
-        correction = kp * ( midpoint - value );
-        manualDirection(200+correction, 200-correction);
-    }
-}
-
 void followPIDLine(int white, int black, sensor_light_t Light3){
     int midpoint = ( white - black ) / 2 + black;
-    float kp = 0.8;
+    float kp = 0.8; 
     float ki = 0;
     float kd = 0.002;
     float lasterror = 0;
