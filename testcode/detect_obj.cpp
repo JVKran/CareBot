@@ -161,10 +161,10 @@ void followPIDLine(int white, int colorWhite, int colorBlack, int black, sensor_
 		if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 15){
 			// Als de afstand kleiner is dan 10cm, draai dan naar rechts, maak een cirkel naar links
 			// totdat de lijn wordt herkend. Rijd iets door zodat het op zijn plaats naar rechts draait. Hervat vervolgens.
-			solidRight(200);
+			solidRight(200); //Rij naar rechts
 			usleep(2000000);
-			manualDirection(500,250);
-			while(Light3.reflected<midpoint){			// Misschien vergoper verkeerd om
+			manualDirection(500,250); //Maak een cirkel naar rechts
+			while(Light3.reflected<midpoint){			//Als het geen zwart heeft gevonden blijft het in deze loop
 				BP.get_sensor(PORT_3, Light3);
 			}
 			cout << "Lijn na obstakel gevonden\n";
