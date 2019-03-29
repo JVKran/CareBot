@@ -16,27 +16,27 @@ bool initialize(){
 	BP.set_motor_limits(PORT_C, 60, 0);
 }
 
-void fwd(int speed=45){
+void fwd(int speed=45){				//functie om naar voren te rijden
     BP.set_motor_power(PORT_B, speed*1.07); //ivm ongelijkheid motoren.
     BP.set_motor_power(PORT_C, speed);
 }
 
-void stop(void){
+void stop(void){				//functie om de motoren uit te zetten
 	BP.set_motor_power(PORT_B, 0);
     	BP.set_motor_power(PORT_C, 0);
 }
 
-void left(int speed=45){
+void left(int speed=45){			//functie om naar links te draaien
     BP.set_motor_dps(PORT_B, speed*1.07);
     BP.set_motor_dps(PORT_C, -speed);
 }
 
-void right(int speed=45){
+void right(int speed=45){			//functie om naar rechts te draaien
     BP.set_motor_dps(PORT_B, -speed*1.07);
     BP.set_motor_dps(PORT_C, speed);
 }
 
-void down(int speed=-45){
+void down(int speed=-45){			//functie om naar achteren te gaan
 	BP.set_motor_power(PORT_B, speed*1.07); //ivm ongelijkheid motoren.
     	BP.set_motor_power(PORT_C, speed);
 }
@@ -60,37 +60,37 @@ int main() {
 		cout << "accepted from " << clientsock->getForeignAddress().getAddress() << endl;
 		MessageBox& mb = clientsock->getMessageBox();
 			
-		string input;
-		int IAmSpeed=90;
+		string input;			//hierin staat de input die wordt gegeven door een verbonden mobiel.
+		int IAmSpeed=90;		//hierin staat de snelheid voor de motoren naar voren en naar achteren
 		while(mb.isRunning()) {
-			input = mb.readMessage();  //blokkeert niet
-			if(input != ""){
-			cout << "input: " << input << endl;
+			input = mb.readMessage();  		//blokkeert niet
+			if(input != ""){			//controlleerd of de input niet gelijk is aan niks
+			cout << "input: " << input << endl;	//laat op het scherm zien wat de input is
 			}
 			if(input == "UP"){ 
-				fwd(IAmSpeed);
+				fwd(IAmSpeed);			//Als de input pijltje omhoog is gaat het naar voren rijden
 			}else if(input == "LEFT"){
-				left(500);
+				left(500);			//Als de input pijltje naar links is gaat het naar links draaien
 			}else if(input == "RIGHT"){
-				right(500);
+				right(500);			//Als de input pijltje naar rechts is gaat het naar rechts draaien
 			}else if(input == "DOWN"){
-				down(-IAmSpeed);
+				down(-IAmSpeed);		//Als de input pijltje omlaag is gaat het naar achteren rijden
 			}else if(input == "FIRE"){
-				stop();
-			}else if(input == "A"){
+				stop();				//Als je op de middelste knop drukt stopt het met wat het aan het doen is
+			}else if(input == "A"){			//Werkt nog niet volledig
 				cout<< "Normaal" << endl;
-				IAmSpeed=90;
-			}else if(input == "B"){
+				IAmSpeed=90;			//Veranderd de snelheid naar 90, als je op knop A drukt
+			}else if(input == "B"){			//Werkt nog niet volledig!
 				cout<< "Snel" << endl;
-				IAmSpeed=200;
-			}else if(input == "C"){
+				IAmSpeed=200;			//Veranderd de snelheid naar 200, als je op knop A drukt
+			}else if(input == "C"){			//Werkt nog niet volledig!
 				cout<< "I AM SPEED" << endl;
-				IAmSpeed=300;
+				IAmSpeed=300;			//Veranderd de snelheid naar 300, als je op knop A drukt
 			}
 			//doe andere dingen.
 			cout << ".";
 			cout.flush();
-			usleep(500000); // wacht 500 ms
+			usleep(500000); // wacht 500 ms voor volgende input om overgevoeligheid in het programma te voorkomen
 		}	
 		
 		clientsock->close();
