@@ -12,15 +12,10 @@ BrickPi3 BP;
 void exit_signal_handler(int signo);
 
 bool initialize(){
-    BP.set_sensor_type(PORT_1, SENSOR_TYPE_NXT_COLOR_FULL);
     BP.set_sensor_type(PORT_2, SENSOR_TYPE_NXT_ULTRASONIC);
-    BP.set_sensor_type(PORT_3, SENSOR_TYPE_NXT_LIGHT_ON);
-    BP.set_sensor_type(PORT_4, SENSOR_TYPE_TOUCH);
-    BP.set_sensor_type(PORT_2, SENSOR_TYPE_NXT_ULTRASONIC);
-    BP.set_motor_limits(PORT_B, 60, 0);
-    BP.set_motor_limits(PORT_C, 60, 0);
 }
 
+//functie die test of de Ultrasonic sensor goed werkt
 void detect(sensor_ultrasonic_t Ultrasonic2){
     BP.get_sensor(PORT_2, Ultrasonic2);
     while(true){
@@ -43,10 +38,9 @@ int main(){
         BP.reset_all();
         exit(-2);
     }
-    sensor_color_t      Color1;
+
     sensor_ultrasonic_t Ultrasonic2;
-    sensor_light_t      Light3;
-    sensor_touch_t      Touch4;
+
     detect(Ultrasonic2);
 
 
