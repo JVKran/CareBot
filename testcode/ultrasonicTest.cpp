@@ -18,11 +18,12 @@ bool initialize(){
 //functie die test of de Ultrasonic sensor goed werkt
 void detect(sensor_ultrasonic_t Ultrasonic2){
     BP.get_sensor(PORT_2, Ultrasonic2);
-    while(true){
-        usleep(200000);
-        if(BP.get_sensor(PORT_2, Ultrasonic2) == 0){
+    
+    while(true){                //blijft loopen en stopt pas als je het programma sluit
+        usleep(200000);         //slaapt kort om te voorkomen dat er te veel gegevens achter elkaar worden afgedrukt
+        if(BP.get_sensor(PORT_2, Ultrasonic2) == 0){    
             BP.get_sensor(PORT_2, Ultrasonic2);
-            cout << "Afstand: " << Ultrasonic2.cm << " cm" << endl;
+            cout << "Afstand: " << Ultrasonic2.cm << " cm" << endl;     //voert de afstand die de sensor leest uit
         }
     }
 }
