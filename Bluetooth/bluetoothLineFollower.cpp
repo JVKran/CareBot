@@ -170,17 +170,6 @@ void manualDirection(int left=15, int right=15){
 }
 
 void followPIDLine(int white, int colorWhite, int colorBlack, int black, sensor_light_t Light3, sensor_color_t Color1, sensor_ultrasonic_t Ultrasonic2){
-	BluetoothServerSocket serversock(2, 1);  //2 is het channel-number
-	cout << "Bluetoothsocket gestart! Listening..." << endl;
-	while(true){
-		BluetoothSocket* clientsock = serversock.accept();
-		cout << "Verbonden met: " << clientsock->getForeignAddress().getAddress() << endl;
-		MessageBox& mb = clientsock->getMessageBox();
-		if(mb.isRunning()){
-			break;
-		}
-	}
-	cout << "Lijnvolger gestart!";
 	int midpoint = ( white - black ) / 2 + black;			//Midpoint lichtsensor
 	int colorMidpoint = ( colorWhite- colorBlack) / 2 + colorBlack;	//Midpoint kleurensensor
 	float kp = 1.5;
@@ -193,90 +182,98 @@ void followPIDLine(int white, int colorWhite, int colorBlack, int black, sensor_
 	float derivative;
 	float correction;
 	string input;
+	BluetoothServerSocket serversock(2, 1);  //2 is het channel-number
+	cout << "Bluetoothsocket gestart! Listening..." << endl;
 	while(true){
+		BluetoothSocket* clientsock = serversock.accept();
+		cout << "Verbonden met: " << clientsock->getForeignAddress().getAddress() << endl;
 		MessageBox& mb = clientsock->getMessageBox();
-		BP.get_sensor(PORT_3, Light3);
-		BP.get_sensor(PORT_1, Color1);
-		value = Light3.reflected;
-		error = midpoint - value;
-		integral = error + integral;
-		derivative = error - lasterror;
-		correction = kp * error + ki * integral + kd * derivative;
-		manualDirection(600+correction, 600-correction);
-		lasterror = error;
-		// Als er een brede lijn is (kruispunt) of er heel veel gecorigeerd moet worden (einde lijn/scherpe bocht)
-		cout << "Loopje"<<endl;
-		if(Color1.reflected_blue < colorMidpoint || error > 280){
+		cout << "Lijnvolger gestart!";
+		while(mb.isRunning()){
+			MessageBox& mb = clientsock->getMessageBox();
 			BP.get_sensor(PORT_3, Light3);
-			stop();
-			fwd(40);
-			// Rijd naar voren om op zijn plaats (x,y: 0,0) te draaien
-			usleep(600000);
-			stop();
-			if(Light3.reflected > midpoint){
-				// Als zowel de kleurensensor als lichtsensor zwart aangeeft, moet er sprake zijn van een kruispunt
-				input = mb.readMessage();
-				while(input != "LEFT" || input != "RIGHT" || input != "UP"){
+			BP.get_sensor(PORT_1, Color1);
+			value = Light3.reflected;
+			error = midpoint - value;
+			integral = error + integral;
+			derivative = error - lasterror;
+			correction = kp * error + ki * integral + kd * derivative;
+			manualDirection(600+correction, 600-correction);
+			lasterror = error;
+			// Als er een brede lijn is (kruispunt) of er heel veel gecorigeerd moet worden (einde lijn/scherpe bocht)
+			cout << "Loopje"<<endl;
+			if(Color1.reflected_blue < colorMidpoint || error > 280){
+				BP.get_sensor(PORT_3, Light3);
+				stop();
+				fwd(40);
+				// Rijd naar voren om op zijn plaats (x,y: 0,0) te draaien
+				usleep(600000);
+				stop();
+				if(Light3.reflected > midpoint){
+					// Als zowel de kleurensensor als lichtsensor zwart aangeeft, moet er sprake zijn van een kruispunt
 					input = mb.readMessage();
-					usleep(500000);
+					while(input != "LEFT" || input != "RIGHT" || input != "UP"){
+						input = mb.readMessage();
+						usleep(500000);
+					}
+					cout << "Robot gaat: " << input << endl;
+					if(input == "LEFT"){
+						solidLeft(200);
+					} else if (input == "RIGHT"){
+						solidRight(200);
+					}  else {
+						continue;
+					}
+					usleep(1500000);	//Negeer de eerste keer dat de lijn voorbijkomt
+					while(Light3.reflected<midpoint){
+						// Blijf draaien totdat er weer een lijn gevonden wordt.
+						BP.get_sensor(PORT_3, Light3);
+					}
+					if(input=="LEFT" || input =="RIGHT"){
+						usleep(400000);		//Wacht nog 0,5 seconden om over de lijn heen te draaien
+					}
+					stop();
+				} else {
+					// Sprake van een scherpe bocht
+					cout << "Scherpe bocht";
+					BP.get_sensor(PORT_3, Light3);
+					BP.get_sensor(PORT_1, Color1);
+					if (Color1.reflected_blue < colorMidpoint){
+						input = "LEFT";
+						solidLeft(200);
+					} else {
+						solidRight(200);
+					}
+					while(Light3.reflected<midpoint){
+						BP.get_sensor(PORT_3, Light3);
+					}
+					if(input=="LEFT"){
+						usleep(500000);		//Wacht nog 0,5 seconden om over de lijn heen te draaien
+					}
+					stop();
 				}
-				cout << "Robot gaat: " << input << endl;
-				if(input == "LEFT"){
-					solidLeft(200);
-				} else if (input == "RIGHT"){
-					solidRight(200);
-				}  else {
-					continue;
+			}
+			if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 15){
+				// Als de afstand kleiner is dan 10cm, draai dan naar rechts, maak een cirkel naar links
+				// totdat de lijn wordt herkend. Rijd iets door zodat het op zijn plaats naar rechts draait. Hervat vervolgens.
+				solidRight(200);
+				usleep(2000000);
+				circle(500);
+				BP.get_sensor(PORT_3, Light3);
+				while(Light3.reflected<midpoint){			// Misschien vergoper verkeerd om
+					BP.get_sensor(PORT_3, Light3);
 				}
-				usleep(1500000);	//Negeer de eerste keer dat de lijn voorbijkomt
+				cout << "Lijn na obstakel gevonden\n";
+				stop();
+				BP.get_sensor(PORT_3, Light3);
+				solidRight(200);
 				while(Light3.reflected<midpoint){
 					// Blijf draaien totdat er weer een lijn gevonden wordt.
 					BP.get_sensor(PORT_3, Light3);
 				}
-				if(input=="LEFT" || input =="RIGHT"){
-					usleep(400000);		//Wacht nog 0,5 seconden om over de lijn heen te draaien
-				}
-				stop();
-			} else {
-				// Sprake van een scherpe bocht
-				cout << "Scherpe bocht";
-				BP.get_sensor(PORT_3, Light3);
-				BP.get_sensor(PORT_1, Color1);
-				if (Color1.reflected_blue < colorMidpoint){
-					input = "LEFT";
-					solidLeft(200);
-				} else {
-					solidRight(200);
-				}
-				while(Light3.reflected<midpoint){
-					BP.get_sensor(PORT_3, Light3);
-				}
-				if(input=="LEFT"){
-					usleep(500000);		//Wacht nog 0,5 seconden om over de lijn heen te draaien
-				}
-				stop();
+				cout<<"turned";
+				//usleep(1500000);
 			}
-		}
-		if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 15){
-			// Als de afstand kleiner is dan 10cm, draai dan naar rechts, maak een cirkel naar links
-			// totdat de lijn wordt herkend. Rijd iets door zodat het op zijn plaats naar rechts draait. Hervat vervolgens.
-			solidRight(200);
-			usleep(2000000);
-			circle(500);
-			BP.get_sensor(PORT_3, Light3);
-			while(Light3.reflected<midpoint){			// Misschien vergoper verkeerd om
-				BP.get_sensor(PORT_3, Light3);
-			}
-			cout << "Lijn na obstakel gevonden\n";
-			stop();
-			BP.get_sensor(PORT_3, Light3);
-			solidRight(200);
-			while(Light3.reflected<midpoint){
-				// Blijf draaien totdat er weer een lijn gevonden wordt.
-				BP.get_sensor(PORT_3, Light3);
-			}
-			cout<<"turned";
-			//usleep(1500000);
 		}
 	}
   cout << "Bluetoothverbinding verloren..." << endl;
@@ -308,6 +305,7 @@ int main(){
 		BP.reset_all();
 		exit(-2);
 	}
+	followPIDLine(white, colorWhite, colorBlack, black, Light3, Color1, Ultrasonic2);
 }
 
 // Signal handler that will be called when Ctrl+C is pressed to stop the program
