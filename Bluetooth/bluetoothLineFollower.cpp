@@ -191,6 +191,15 @@ void followPIDLine(int white, int colorWhite, int colorBlack, int black, sensor_
 		cout << "Lijnvolger gestart!";
 		while(mb.isRunning()){
 			MessageBox& mb = clientsock->getMessageBox();
+			input = mb.readMessage();
+			if(input=="FIRE"){
+				while(input!="UP"){
+					input = mb.readMessage();
+					if(input=="UP"){
+						break;
+					}
+				}
+			}
 			BP.get_sensor(PORT_3, Light3);
 			BP.get_sensor(PORT_1, Color1);
 			value = Light3.reflected;
