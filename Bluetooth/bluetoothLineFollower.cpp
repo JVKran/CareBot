@@ -222,7 +222,7 @@ void followPIDLine(int white, int colorWhite, int colorBlack, int black, sensor_
 					// Blijf draaien totdat er weer een lijn gevonden wordt.
 					BP.get_sensor(PORT_3, Light3);
 				}
-				if(input=='l' || input =='r'){
+				if(input=="LEFT" || input =="RIGHT"){
 					usleep(400000);		//Wacht nog 0,5 seconden om over de lijn heen te draaien
 				}
 				stop();
