@@ -212,7 +212,7 @@ void followPIDLine(int white, int colorWhite, int colorBlack, int black, sensor_
 				if(Light3.reflected > midpoint){
 					// Als zowel de kleurensensor als lichtsensor zwart aangeeft, moet er sprake zijn van een kruispunt
 					input = mb.readMessage();
-					while(input != "LEFT" || input != "RIGHT" || input != "UP"){
+					while(input != "LEFT" && input != "RIGHT" && input != "UP"){
 						input = mb.readMessage();
 						usleep(500000);
 					}
@@ -305,6 +305,7 @@ int main(){
 		BP.reset_all();
 		exit(-2);
 	}
+	stop();
 	followPIDLine(white, colorWhite, colorBlack, black, Light3, Color1, Ultrasonic2);
 }
 
