@@ -169,7 +169,17 @@ void manualDirection(int left=15, int right=15){
     BP.set_motor_dps(PORT_C, right);
 }
 
-void followPIDLine(int white, int colorWhite, int colorBlack, int black, sensor_light_t Light3, sensor_color_t Color1, sensor_ultrasonic_t Ultrasonic2, MessageBox& mb){
+void followPIDLine(int white, int colorWhite, int colorBlack, int black, sensor_light_t Light3, sensor_color_t Color1, sensor_ultrasonic_t Ultrasonic2){
+	BluetoothServerSocket serversock(2, 1);  //2 is het channel-number
+	cout << "Bluetoothsocket gestart! Listening..." << endl;
+	while(true){
+		BluetoothSocket* clientsock = serversock.accept();
+		cout << "Verbonden met: " << clientsock->getForeignAddress().getAddress() << endl;
+		MessageBox& mb = clientsock->getMessageBox();
+		if(mb.isRunning()){
+			break;
+		}
+	}
 	cout << "Lijnvolger gestart!";
 	int midpoint = ( white - black ) / 2 + black;			//Midpoint lichtsensor
 	int colorMidpoint = ( colorWhite- colorBlack) / 2 + colorBlack;	//Midpoint kleurensensor
@@ -183,7 +193,8 @@ void followPIDLine(int white, int colorWhite, int colorBlack, int black, sensor_
 	float derivative;
 	float correction;
 	string input;
-	while(mb.isRunning()){
+	while(true){
+		MessageBox& mb = clientsock->getMessageBox();
 		BP.get_sensor(PORT_3, Light3);
 		BP.get_sensor(PORT_1, Color1);
 		value = Light3.reflected;
@@ -296,17 +307,6 @@ int main(){
 		cout << "Calibratie mislukt. Programma wordt getermineerd";
 		BP.reset_all();
 		exit(-2);
-	}
-	BluetoothServerSocket serversock(2, 1);  //2 is het channel-number
-	cout << "Bluetoothsocket gestart! Listening..." << endl;
-	while(true){
-		BluetoothSocket* clientsock = serversock.accept();
-		cout << "Verbonden met: " << clientsock->getForeignAddress().getAddress() << endl;
-		MessageBox& mb = clientsock->getMessageBox();
-		if(mb.isRunning()){
-			followPIDLine(white, colorWhite, colorBlack, black, Light3, Color1, Ultrasonic2, mb);
-		}
-		clientsock->close();
 	}
 }
 
