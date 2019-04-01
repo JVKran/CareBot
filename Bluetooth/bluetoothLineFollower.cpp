@@ -268,7 +268,6 @@ void followPIDLine(int white, int colorWhite, int colorBlack, int black, sensor_
 			//usleep(1500000);
 		}
 	}
-  clientsock->close();
   cout << "Bluetoothverbinding verloren..." << endl;
 }
 
@@ -307,13 +306,13 @@ int main(){
 		if(mb.isRunning()){
 			followPIDLine(white, colorWhite, colorBlack, black, Light3, Color1, Ultrasonic2, mb);
 		}
-  }
+		clientsock->close();
+	}
 }
 
 // Signal handler that will be called when Ctrl+C is pressed to stop the program
 void exit_signal_handler(int signo){
   if(signo == SIGINT){
-    clientsock->close();
     BP.reset_all();    // Reset everything so there are no run-away motors
     exit(-2);
   }
