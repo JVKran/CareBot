@@ -56,6 +56,18 @@ int main(int, char**){
         // show live and wait for a key with timeout long enough to show images
         imshow("CAMERA 1", frame);  // Window name
         imshow("Red Camera", redOnly);  // Window name
+	if(cv::countNonZero(redOnly) > 50000){
+		cv::Mat left = redOnly(cv::Range(0, redOnly.rows -1), cv::Range(0, redOnly.cols / 2 -1));
+		cv::Mat right = redOnly(cv::Range(0, redOnly.rows -1), cv::Range(redOnly.cols / 2 + 1, redOnly.cols -1));
+		int rightWhite = cv::countNonZero(right);
+		int leftWhite = cv::countNonZero(left);
+		if(leftWhite > rightWhite){
+			cout << "Turn Right!" << endl;
+		} else {
+			cout << "Turn Left!" << endl;
+		}
+	}	
+
 
 
         tipka = cv::waitKey(30);
