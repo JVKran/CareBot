@@ -1,3 +1,5 @@
+#include "BrickPi3.h" 		// for BrickPi3
+#include <iostream>
 #include <unistd.h>     	// for sleep
 #include <signal.h>     	// for catching exit signals
 #include <iomanip>		// for setw and setprecision
@@ -10,8 +12,28 @@ BrickPi3 BP;
 void exit_signal_handler(int signo);
 
 bool initialize(){
+
+    if(BP.get_voltage_battery() < 10.85){
+        cout << "Batterijspanning is te laag! Namelijk " << BP.get_voltage_battery() << "V. Script wordt getermineerd." << endl << endl;
+        BP.reset_all();
+        exit(-2);
+    } else {
+        cout << "Batterijspanning is goed. Namelijk " << BP.get_voltage_battery() << "V." << endl << endl;
+    }
     BP.set_sensor_type(PORT_2, SENSOR_TYPE_NXT_ULTRASONIC);
-    BP.set_motor_limits(PORT_B, 15, 0);
+    BP.set_motor_limits(PORT_D, 20, 0);
+    BP.set_motor_limits(PORT_B, 20, 0);
+    BP.set_motor_limits(PORT_C, 20, 0);
+}
+
+void fwd(int speed=45){
+    BP.set_motor_power(PORT_B, speed*1.07); //ivm ongelijkheid motoren.
+    BP.set_motor_power(PORT_C, speed);
+}
+
+void stop(void){
+    BP.set_motor_power(PORT_B, 0);
+    BP.set_motor_power(PORT_C, 0);
 }
 
 void detect(sensor_ultrasonic_t Ultrasonic2){
@@ -25,17 +47,23 @@ void detect(sensor_ultrasonic_t Ultrasonic2){
     cout << "De klauwen worden nu geopend!" << endl;
 
     while(true){
-        usleep(200000);
+        usleep(50000);
 
-        if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 10){
+        if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 50){
             cout << "Grab object " << i << endl;
             i++;
-            BP.set_motor_position(PORT_D, 4);
+            if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 8){
+                stop();
+                BP.set_motor_power(PORT_D, 20);
+            }else{
+                fwd(20);
+            }
         }else{
             BP.set_motor_position(PORT_D, -4);
         }
     }
 }
+
 
 int main(){
     signal(SIGINT, exit_signal_handler); // register the exit function for Ctrl+C
