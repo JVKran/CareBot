@@ -72,6 +72,18 @@ void detect(sensor_ultrasonic_t Ultrasonic2){
     }
 }
 
+void speed(int & IamSpeed,int & bocht){
+    if(IamSpeed > 50 && bocht > 150){
+        IamSpeed = 50;
+        bocht = 150;
+    }else{
+        IamSpeed = 90;
+        bocht = 500;
+    }
+}
+
+
+
 int main() {
     signal(SIGINT, exit_signal_handler); // register the exit function for Ctrl+C
     BP.detect(); // Make sure that the BrickPi3 is communicating and that the firmware is compatible with the drivers.
@@ -94,7 +106,8 @@ int main() {
         MessageBox& mb = clientsock->getMessageBox();
 
         string input;
-        int IAmSpeed=90;
+        int IAmSpeed=50;
+        int bocht = 150;
         while(mb.isRunning()) {
             input = mb.readMessage();  //blokkeert niet
             if(input != ""){
@@ -103,9 +116,9 @@ int main() {
             if(input == "UP"){
                 fwd(IAmSpeed);
             }else if(input == "LEFT"){
-                left(500);
+                left(bocht);
             }else if(input == "RIGHT"){
-                right(500);
+                right(bocht);
             }else if(input == "DOWN"){
                 down(-IAmSpeed);
             }else if(input == "FIRE"){
@@ -114,9 +127,11 @@ int main() {
                 cout<< "Detect" << endl;
                 detect(Ultrasonic2);
             }else if(input == "B"){
-                cout<< "Snel" << endl;
+                cout<< "Open" << endl;
+                BP.set_motor_position(PORT_D, -4);
             }else if(input == "C"){
                 cout<< "I AM SPEED" << endl;
+                speed(IAmSpeed, bocht);
             }
             //doe andere dingen.
             cout << ".";
@@ -136,3 +151,4 @@ void exit_signal_handler(int signo){
         exit(-2);
     }
 }
+
