@@ -27,9 +27,9 @@ bool initialize(){
 }
 
 void grab(sensor_ultrasonic_t Ultrasonic2){
-	BP.offset_motor_encoder(PORT_D, BP.get_motor_encoder(PORT_D));
-	int32_t EncoderD = BP.get_motor_encoder(PORT_D);
-	BP.set_motor_position(PORT_D, EncoderD);
+	BP.offset_motor_encoder(PORT_D, BP.get_motor_encoder(PORT_D)); //Reset encoder
+	int32_t EncoderD = BP.get_motor_encoder(PORT_D); //Sla motorpositie op
+	BP.set_motor_position(PORT_D, EncoderD); //Zet motor op huidige positie
 	cout << "Motor gereset" << endl;
 	string input;
 	int IAmSpeed = 15;
@@ -37,7 +37,7 @@ void grab(sensor_ultrasonic_t Ultrasonic2){
 	uint8_t StateD;
 	int8_t PowerD;
 	int32_t PositionD;
-	int16_t DPSD;
+	int16_t DPSD; //Als die meerdere keren 0 geeft staan de motoren uit of is de weerstand groot
 	while(true){
 		cout << "g or o the claws?(Type m to modify speed and time. Type Stop to stop)" << endl;
 		cin >> input;
@@ -61,13 +61,13 @@ void grab(sensor_ultrasonic_t Ultrasonic2){
 			BP.set_motor_position(PORT_D, 3);
 		}
 		else if(input == "o"){
-			BP.set_motor_position(PORT_D, -5);		//De klauwen gaan open
+			BP.set_motor_position(PORT_D, -4);		//De klauwen gaan open
 			cout << "De klauwen worden nu geopend!" << endl;
 		}
 		else if(input == "Stop"){
 			break;
 		}
-		else if(input == "m"){
+		else if(input == "m"){  //Voor eindresultaat overbodig
 			cout << "Snelheid veranderen: " << endl;
 			cin >> IAmSpeed;
 			cout << "Tijd veranderen(getal x 1 miljoen): " << endl;
