@@ -11,12 +11,13 @@
 
 #define joyY      A6
 #define joyX      A7
-#define joyButton 32
+#define joyButton 14
 
 int xValue;
 int yValue;
 int bValue;
 int pos = 0; //Used for current choice of marker
+bool menu = true; //Display marker or not
 
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 
@@ -27,13 +28,15 @@ int incoming;
 String message;
 
 void choiceMarker(int pos, String color = "white"){
-  if(color == "black"){
-    tft.setTextColor(ST77XX_BLACK);
-  } else {
-    tft.setTextColor(ST77XX_WHITE);
+  if(menu){
+    if(color == "black"){
+      tft.setTextColor(ST77XX_BLACK);
+    } else {
+      tft.setTextColor(ST77XX_WHITE);
+    }
+    tft.setCursor(4,pos*10+5);
+    tft.print("->");
   }
-  tft.setCursor(4,pos*10+5);
-  tft.print("->");
 }
 
 
@@ -95,15 +98,18 @@ void moveChoiceMarker(int x, int y, int b){
       Serial.println(yValue);
     }
   }
-  if(b == 1){
+  if(b == 0){
     if(pos == 0){
       manualControl();
+      menu = false;
     } else if(pos == 1){
       automaticControl();
+      menu = false;
     }
   }
   choiceMarker(pos, "white");
   Serial.println("loopje");
+  Serial.println(b);
 }
 
 void choiceMenu(){
@@ -116,7 +122,18 @@ void choiceMenu(){
 }
 
 void manualControl(void){
-  
+  tft.fillScreen(ST77XX_BLACK);
+  while(true){
+    xValue = analogRead(joyX);
+    yValue = analogRead(joyY);
+    bValue = digitalRead(joyButton);
+    ESP_BT.print("S: ");
+    ESP_BT.print(yValue);
+    ESP_BT.print("X: ");
+    ESP_BT.print(xValue);
+    ESP_BT.print("K: ");
+    ESP_BT.println(bValue);
+  }
 }
 
 void automaticControl(void){
