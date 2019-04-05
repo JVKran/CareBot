@@ -46,7 +46,13 @@ void right(int speed=45){
     BP.set_motor_dps(PORT_C, speed);
 }
 
+/* de functie detect krijgt als parameter de Ultrasonic sensor mee om te checken of er een voorwerp
+ * ongeveer 50 cm voor de robot staat, als er een voorwerp is maar die is te ver om te grijpen rijd
+ * de robot er heen als het recht voor de sensor staat en als het voorwerp te verweg is voor beide
+ * stopt het de loop.
+*/
 void detect(sensor_ultrasonic_t Ultrasonic2){
+    //zet de encoder
     BP.offset_motor_encoder(PORT_D, BP.get_motor_encoder(PORT_D));
     int32_t EncoderD = BP.get_motor_encoder(PORT_D);
     BP.set_motor_position(PORT_D, EncoderD);
@@ -55,24 +61,27 @@ void detect(sensor_ultrasonic_t Ultrasonic2){
     cout << "De klauwen worden nu geopend!" << endl;
 
     while(true){
-        usleep(50000);
+        usleep(50000);      //slaap voor een korte tijd om betrouwbaardere waardes uit te lezen
 
+        //checked of er een voorwerp dichter dan 50 cm voor de sensor van de robot staat
         if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 50){
-            cout << "Grab object " << endl << Cm: << Ultrasonic2.cm;
+            cout << "Grab object " << endl << Cm: << Ultrasonic2.cm;        //laat zien op het scherm dat er een object gevonden is
 
             if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 8){
-                stop();
-                BP.set_motor_power(PORT_D, 20);
+                stop();                                 //Als het voorwerp minder dan 8 cm voor de sensor staat stop de motoren
+                BP.set_motor_power(PORT_D, 20);         //pak het voorwerp vast met de grijper
                 break;
             }
             else{
-                fwd(500);
+                fwd(500);       //zolang het voorwerp minder dan 50cm voor het voorwerp staat en meer dan 8 cm rij naar voren
             }
         }else if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm > 49 || Ultrasonic2.cm < 0){
-            break;
+            break;  //als het voorwerp verder dan 50cm van de sensor vandaan staat of als de sensor een waarde geeft kleiner
+                    // dan 0 (wat alleen weergeven wordt als de afstand te groot is om te lezen of te klein) dan breakt het uit de loop
+
         }
         else{
-            BP.set_motor_position(PORT_D, -4);
+            BP.set_motor_position(PORT_D, -4);      //zorgt er voor dat zodra er geen voorwerp meer zichtbaar is dat de klauwen weer open gaan
         }
     }
 }
@@ -100,7 +109,7 @@ int main(){
         exit(-2);
     }
     sensor_ultrasonic_t Ultrasonic2;
-    detect(Ultrasonic2);
+    detect(Ultrasonic2);                //roept de functie aan
 
 
 }

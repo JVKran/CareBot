@@ -36,30 +36,37 @@ void stop(void){
     BP.set_motor_power(PORT_C, 0);
 }
 
+/* de functie detect krijgt als parameter de Ultrasonic sensor mee om te checken of er een voorwerp
+ * ongeveer 50 cm voor de robot staat, als er een voorwerp is maar die is te ver om te grijpen rijd
+ * de robot er heen als het recht voor de sensor staat.
+ */
 void detect(sensor_ultrasonic_t Ultrasonic2){
-    int i = 0;
+    int i = 0;      //houd bij hoeveel keer er een voorwerp is gevonden binnen 50 cm (voor test)
 
+    //zet de encoder
     BP.offset_motor_encoder(PORT_D, BP.get_motor_encoder(PORT_D));
     int32_t EncoderD = BP.get_motor_encoder(PORT_D);
     BP.set_motor_position(PORT_D, EncoderD);
 
-    BP.set_motor_position(PORT_D, -4);		//De klauwen gaan open
+    BP.set_motor_position(PORT_D, -4);		                //De klauwen gaan open, als ze nog niet open waren
     cout << "De klauwen worden nu geopend!" << endl;
 
     while(true){
-        usleep(50000);
+        usleep(50000);      //slaap voor een korte tijd om betrouwbaardere waardes uit te lezen
 
+        //checked of er een voorwerp dichter dan 50 cm voor de sensor van de robot staat
         if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 50){
-            cout << "Grab object " << i << endl;
-            i++;
+            cout << "Grab object " << i << endl;    //laat zien op het scherm dat er een object gevonden is
+            i++;                                    //voegt 1 toe aan i zodat we weten of het gevonden blijft
+            //checked of het voorwerp minder dan 8 cm voor de sensor staat
             if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 8){
-                stop();
-                BP.set_motor_power(PORT_D, 20);
+                stop();                             //Als het voorwerp minder dan 8 cm voor de sensor staat stop de motoren
+                BP.set_motor_power(PORT_D, 20);     //pak het voorwerp vast met de grijper
             }else{
-                fwd(20);
+                fwd(20);    //zolang het voorwerp minder dan 50cm voor het voorwerp staat en meer dan 8 cm rij naar voren
             }
         }else{
-            BP.set_motor_position(PORT_D, -4);
+            BP.set_motor_position(PORT_D, -4);  //zorgt er voor dat zodra er geen voorwerp meer zichtbaar is dat de klauwen weer open gaan
         }
     }
 }
@@ -77,7 +84,7 @@ int main(){
         exit(-2);
     }
     sensor_ultrasonic_t Ultrasonic2;
-    detect(Ultrasonic2);
+    detect(Ultrasonic2);    //roept de functie aan
 
 
 }
