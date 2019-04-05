@@ -36,9 +36,17 @@ void stop(void){
     BP.set_motor_power(PORT_C, 0);
 }
 
-void detect(sensor_ultrasonic_t Ultrasonic2){
-    int i = 0;
+void left(int speed=45){
+    BP.set_motor_dps(PORT_B, speed*1.07);
+    BP.set_motor_dps(PORT_C, -speed);
+}
 
+void right(int speed=45){
+    BP.set_motor_dps(PORT_B, -speed*1.07);
+    BP.set_motor_dps(PORT_C, speed);
+}
+
+void detect(sensor_ultrasonic_t Ultrasonic2){
     BP.offset_motor_encoder(PORT_D, BP.get_motor_encoder(PORT_D));
     int32_t EncoderD = BP.get_motor_encoder(PORT_D);
     BP.set_motor_position(PORT_D, EncoderD);
@@ -50,20 +58,35 @@ void detect(sensor_ultrasonic_t Ultrasonic2){
         usleep(50000);
 
         if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 50){
-            cout << "Grab object " << i << endl;
-            i++;
+            cout << "Grab object " << endl << Cm: << Ultrasonic2.cm;
+
             if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 8){
                 stop();
                 BP.set_motor_power(PORT_D, 20);
-            }else{
-                fwd(20);
+                break;
             }
-        }else{
+            else{
+                fwd(500);
+            }
+        }else if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm > 49 || Ultrasonic2.cm < 0){
+            break;
+        }
+        else{
             BP.set_motor_position(PORT_D, -4);
         }
     }
 }
 
+void control(sensor_ultrasonic_t Ultrasonic2){
+    while(true){
+        usleep(50000);
+
+        if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 17){
+            stop();
+            break;
+        }
+    }
+}
 
 int main(){
     signal(SIGINT, exit_signal_handler); // register the exit function for Ctrl+C
