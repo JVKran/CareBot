@@ -2,46 +2,44 @@
 #include <iostream>
 #include <stdio.h>
 #include <unistd.h>
-#include "BrickPi3.h"
 #include <signal.h>
 #include <iomanip>
-#include "BluetoothSocket.h"
+#include <vector>
+#include <fstream>
 
 
 using namespace cv;
 using namespace std;
 
+int main(){
 string line;
 string inputFD;//Forward Down
 string inputLR;//Left Right
 string inputB;//Button
 
-int main(){
-std::ifstream myfile("/home/pi/dev/rfcomm0.txt");
+vector<string> y(2);
+ifstream myfile ("/dev/rfcomm0");
 
-if(input.is_open()){
+if(myfile.is_open()){
 	while(getline (myfile, line)){
-		for(unsigned int  =0; i<line.size();i++){
-				if(line[-1]=="0"){
-					inputB="A";
-					break;
-				}
-				else if(i<3){
-					if(line[i]!=","){
-						inputFD+=line[i];
-						}
-					}
-				else{
-					if(line[i]!=","){
-						inputLR+=line[i]
-						}
-					}
-				break;
-			}
+		cout << line << endl;
+		string tmp;
+		int j = 0;
+
+		for(unsigned int i = 0; i < line.size(); i++){
+			if(line[i] != ','){
+            			tmp += line[i];
+        		}
+        		if(line[i] == ',' || line.size()-1 == i){
+            			y[j] = tmp;
+				j++;
+            			tmp = "";
+        		}
 		}
-		myfile.close();
-		}else{
-     		cout << "Unable to open" << endl;
-     		}
+		cout << "1: " << y[0] << " 2: " << y[1] << " 3: " << y[2] << endl;
+	}
+	myfile.close();
+}else{
+     	cout << "Unable to open" << endl;
+     }
 }
-//9 max waarde, 3 min waarde
