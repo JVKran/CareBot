@@ -70,7 +70,7 @@ void detect(sensor_ultrasonic_t Ultrasonic2){
             if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 8){
                 stop();                                 //Als het voorwerp minder dan 8 cm voor de sensor staat stop de motoren
                 BP.set_motor_power(PORT_D, 20);         //pak het voorwerp vast met de grijper
-                break;
+                break;                                  //na het oppakken van het object stop de loop
             }
             else{
                 fwd(500);       //zolang het voorwerp minder dan 50cm voor het voorwerp staat en meer dan 8 cm rij naar voren

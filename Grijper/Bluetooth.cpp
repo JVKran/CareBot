@@ -52,8 +52,6 @@ void down(int speed=-45){
 }
 
 void detect(sensor_ultrasonic_t Ultrasonic2){
-	int i = 0;
-
 	BP.offset_motor_encoder(PORT_D, BP.get_motor_encoder(PORT_D));
 	int32_t EncoderD = BP.get_motor_encoder(PORT_D);
 	BP.set_motor_position(PORT_D, EncoderD);
@@ -62,54 +60,63 @@ void detect(sensor_ultrasonic_t Ultrasonic2){
 	cout << "De klauwen worden nu geopend!" << endl;
 
 	while(true){
-		usleep(50000);
+		usleep(50000);      //slaap voor een korte tijd om betrouwbaardere waardes uit te lezen
 
+        //checked of er een voorwerp dichter dan 50 cm voor de sensor van de robot staat
 		if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 50){
-			cout << "Cm: " << Ultrasonic2.cm << endl;
-			i++;
+			cout << "Cm: " << Ultrasonic2.cm << endl;                           //laat zien op het scherm dat er een object gevonden is
+
 			if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 8){
-				stop();
-				BP.set_motor_power(PORT_D, 20);
-				break;
+				stop();                                 //Als het voorwerp minder dan 8 cm voor de sensor staat stop de motoren
+				BP.set_motor_power(PORT_D, 20);         //pak het voorwerp vast met de grijper
+				break;                                  //na het oppakken van het object stop de loop
 			}
 			else{
-				fwd(500);
+				fwd(500);           //zolang het voorwerp minder dan 50cm voor het voorwerp staat en meer dan 8 cm rij naar voren
 			}
  		}else if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm > 49 || Ultrasonic2.cm < 0){
-			break;
+			break;                  //als het voorwerp verder dan 50cm van de sensor vandaan staat of als de sensor een waarde geeft kleiner
+                                    // dan 0 (wat alleen weergeven wordt als de afstand te groot is om te lezen of te klein) dan breakt het uit de loop
 		}
 		else{
-			BP.set_motor_position(PORT_D, -4);
+			BP.set_motor_position(PORT_D, -4);  //zorgt er voor dat zodra er geen voorwerp meer zichtbaar is dat de klauwen weer open gaan
 		}
 	}
 }
 
+// functie die er voor zorgt dat de snelheid van het draaien en recht doorgaan kan worden verhoogt
+// de variabele IamSpeed is bedoelt voor rechtdoor en de variabele bocht is bedoelt voor links en rechts
+// aangezien bochten en vooruit en achteruit niet dezelfde waardes kunnen hebben in verband met de rupsbanden
 void speed(int & IamSpeed,int & bocht){
-	if(IamSpeed > 50 && bocht > 150){
+    //een check die controleerd of de waardes groter zijn dan de orginele waardes of dat ze gelijk zijn aan de orginele waardes
+	if(IamSpeed > 50 && bocht > 150){   //zodra de orginele waardes kleiner zijn dan de huidige waardes verander terug naar orginele waardes
 		cout<< "Sloom" << endl;
-		IamSpeed = 500;
-		bocht = 150;
-	}else{
+		IamSpeed = 500;         //snelheid wordt aangepast naar 500 degrees per second
+		bocht = 150;            //de bochtsnelheid wordt aangepast naar 150 degrees per second
+	}else{      //in elk ander geval wordt het tempo verhoogd naar een vastgestelde waarde
 		cout<< "I AM SPEED" << endl;
-		IamSpeed = 1000;
-		bocht = 500;
+		IamSpeed = 1000;        //snelheid wordt aangepast naar 1000 degrees per second
+		bocht = 500;            //de bochtsnelheid wordt aangepast naar 500 degrees per second
 	}
 }
 
+//in deze functie wordt er gecontroleerd bij het rechtdoor rijden of er een object in de weg staat of niet
+//en zodra er een object in de weg staat stopt de robot met naar voren rijden
 void control(sensor_ultrasonic_t Ultrasonic2, BluetoothSocket* clientsock){
-		string input=" ";
+		string input=" ";   //variabele waarin de input van de gebruiker komt te staan
+
 	while(true){
-		usleep(50000);
-		cout << "Cm: " << Ultrasonic2.cm << endl;
-		MessageBox& mb = clientsock->getMessageBox();
-		input = mb.readMessage();
-		if(input != " "){
-			break;
+		usleep(50000);                                  //slaapt kort tussen door voor betrouwbaardere waardes
+		cout << "Cm: " << Ultrasonic2.cm << endl;       //weergeeft de afstand
+		MessageBox& mb = clientsock->getMessageBox();   //checked voor input
+		input = mb.readMessage();                       //checked voor input
+		if(input != " "){       //checked of de input niet gelijk is aan een spacie
+			break;              //stopt de loop als dat zo is
 		}
+		//checked of er een voorwerp op 20 cm afstand is
 		if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 20){
-			
-			stop();
-			break;
+			stop();             //stopt de motoren
+			break;              //stopt de loop
 		}
 	}
 }
@@ -137,8 +144,8 @@ int main() {
 		MessageBox& mb = clientsock->getMessageBox();
 			
 		string input;
-		int IAmSpeed=500;
-		int bocht = 150;
+		int IAmSpeed=500;               //standaard degrees per second voor vooruit en achteruit
+		int bocht = 150;                //standaard degrees per second voor links en rechts
 		while(mb.isRunning()) {
 			input = mb.readMessage();  //blokkeert niet
 			if(input != ""){
