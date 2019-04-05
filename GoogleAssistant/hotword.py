@@ -21,7 +21,7 @@ import argparse
 import json
 import os.path
 import pathlib2 as pathlib
-import sys
+import serial #Voor communicatie via bluetooth /dev/rfcomm
 
 import google.oauth2.credentials
 
@@ -30,11 +30,7 @@ from google.assistant.library.event import EventType
 from google.assistant.library.file_helpers import existing_file
 from google.assistant.library.device_helpers import register_device
 
-bd_addr = 'B4:E6:2D:B2:74:F3'
-port = 2
-sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
-sock.connect((bd_addr,port))
-
+ser = serial.Serial('/dev/rfcomm1') #open serieele poort
 
 try:
     FileNotFoundError
@@ -77,8 +73,11 @@ def process_event(event):
     if event.type == EventType.ON_RECOGNIZING_SPEECH_FINISHED and event.args:
         print('You said:', event.args['text'])
         text = event.args['text'].lower()
-        if text == 'zeg doei':
-            sock.send("lightOn#".encode())
+        if text == 'zet de zorgverlichting aan':
+		ser = serial.Serial('/dev/rfcomm1') #open serieele poort
+		ser.write(b'lightOn#')
+		ser.close()
+            
 
 def main():
     parser = argparse.ArgumentParser(
