@@ -21,7 +21,7 @@ import argparse
 import json
 import os.path
 import pathlib2 as pathlib
-import serial #Voor communicatie via bluetooth /dev/rfcomm
+import subprocess
 
 import google.oauth2.credentials
 
@@ -29,8 +29,6 @@ from google.assistant.library import Assistant
 from google.assistant.library.event import EventType
 from google.assistant.library.file_helpers import existing_file
 from google.assistant.library.device_helpers import register_device
-
-ser = serial.Serial('/dev/rfcomm1') #open serieele poort
 
 try:
     FileNotFoundError
@@ -73,10 +71,8 @@ def process_event(event):
     if event.type == EventType.ON_RECOGNIZING_SPEECH_FINISHED and event.args:
         print('You said:', event.args['text'])
         text = event.args['text'].lower()
-        if text == 'zet de zorgverlichting aan':
-		ser = serial.Serial('/dev/rfcomm1') #open serieele poort
-		ser.write(b'lightOn#')
-		ser.close()
+        if text == 'zet project aan':
+                subprocess.run(["echo lightOn# > /dev/rfcomm0"], shell=True)
             
 
 def main():
