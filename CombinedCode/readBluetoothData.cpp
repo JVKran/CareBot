@@ -1,16 +1,31 @@
 #include <iostream>
+#include <opencv2/opencv.hpp>
 #include <unistd.h>
 #include <fstream>
+#include <stdlib.h>
 #include <vector>
 #include <signal.h>
 #include "BrickPi3.h"
 #include <iomanip>
 
 using namespace std;
+using namespace cv;
 
 BrickPi3 BP;
 
+int ct = 0; 
+char tipka;
+char filename[100]; // For filename
+int  c = 1; // For filename
+
 void exit_signal_handler(int signo);
+
+Mat redFilter(const Mat& src){
+    assert(src.type() == CV_8UC3);
+    Mat redOnly;
+    inRange(src, Scalar(0, 0, 0), Scalar(125, 125, 255), redOnly);
+    return redOnly;
+}
 
 void fwd(int speed=45){
     BP.set_motor_dps(PORT_B, speed*1.07); //ivm ongelijkheid motoren.
@@ -50,6 +65,11 @@ void right(int speed=45){
     BP.set_motor_dps(PORT_C, speed);
 }
 
+void circle(int speed=50, int insideSpeed=2){
+        BP.set_motor_dps(PORT_B, speed);
+        BP.set_motor_dps(PORT_C, speed/insideSpeed);
+}
+
 void manualDirection(int left=15, int right=15){
     BP.set_motor_dps(PORT_B, left*1.07);
     BP.set_motor_dps(PORT_C, right);
@@ -74,9 +94,26 @@ int main () {
   vector<string> y(3);
   int j = 0;
   string tmp;
+  Mat frame;
+  VideoCapture cap;
+  cap.open(0);
+  char tipka;
+  if (!cap.isOpened()) {
+        cerr << "Fout tijdens het openen van de Camera!\n";
+        return -1;
+  }
   ifstream myfile ("/dev/rfcomm0");
   if (myfile.is_open()){
     while ( getline (myfile,line) ){
+      cap.read(frame);
+      if (frame.empty()) {
+            cerr << "Leeg frame!\n";
+            break;
+      }
+      usleep(500);
+      Mat redOnly = redFilter(frame);
+      imshow("CAMERA 1", frame);  // Window name
+      imshow("Blank Camera", redOnly);  // Window name
       tmp = "";
       j = 0;
       for(unsigned int i = 0; i < line.size(); i++){
@@ -89,6 +126,27 @@ int main () {
             tmp = "";
        	}
       }
+      if(cv::countNonZero(redOnly) > 50000){
+		cv::Mat left = redOnly(cv::Range(0, redOnly.rows -1), cv::Range(0, redOnly.cols / 2 -1));
+		cv::Mat right = redOnly(cv::Range(0, redOnly.rows -1), cv::Range(redOnly.cols / 2 + 1, redOnly.cols -1));
+		int rightWhite = cv::countNonZero(right);
+		int leftWhite = cv::countNonZero(left);
+		if(leftWhite > rightWhite){
+			//cout << "Turn Right!" << endl;
+			system("echo leftDanger# > /dev/rfcomm0");
+		} else {
+			//cout << "Turn Left!" << endl;
+			system("echo rightDanger# > /dev/rfcomm0");
+		}
+      } else {
+	    system("echo noDirectionDanger# > /dev/rfcomm0");  
+      }
+      if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 25){
+	      system("echo frontDanger# > /dev/rfcomm0");
+      } else {
+	       system("echo noFrontDanger# > /dev/rfcomm0");
+      }
+      tipka = cv::waitKey(30);
       cout << line << endl;
       manualDirection((((stoi(y[0])-2000)/2)-((stoi(y[1])-2048)/4)), (((stoi(y[0])-2000)/2)+((stoi(y[1])-2048)/4)));
       if(stoi(y[2])==0){
