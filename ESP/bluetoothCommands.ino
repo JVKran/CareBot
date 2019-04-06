@@ -88,9 +88,8 @@ void handleIncomingBTMessages(void){
           tft.fillRect(122,30,5,100,ST77XX_RED);
       } else if(message == "frontDanger" && manual == true){
           tft.fillRect(10,15,110,5,ST77XX_RED);
-      } else if(message == "noLeftDanger" && manual == true){
+      } else if(message == "noDirectionDanger" && manual == true){
           tft.fillRect(2,30,5,100,ST77XX_BLACK);
-      } else if(message == "noRightDanger" && manual == true){
           tft.fillRect(122,30,5,100,ST77XX_BLACK);
       } else if(message == "noFrontDanger" && manual == true){
           tft.fillRect(10,15,110,5,ST77XX_BLACK);
