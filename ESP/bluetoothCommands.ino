@@ -19,6 +19,7 @@ int bValue;
 int pos = 0; //Used for current choice of marker
 bool menu = true; //Display marker or not
 String action3;
+bool manual;
 
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 
@@ -58,7 +59,7 @@ void setup() {
 void handleIncomingBTMessages(void){
   if (ESP_BT.available()) //Check if we receive anything from Bluetooth
   {
-    tft.fillCircle(120, 7, 3, ST77XX_GREEN);
+    tft.fillCircle(115, 7, 3, ST77XX_GREEN);
     incoming = ESP_BT.read(); //Read what we recevive 
     if(incoming!='#'){
       message.concat(char(incoming));   
@@ -81,6 +82,18 @@ void handleIncomingBTMessages(void){
           tft.setTextColor(ST77XX_RED);
           tft.print("Licht");
         }
+      } else if(message == "leftDanger" && manual == true){
+          tft.fillRect(2,30,5,100,ST77XX_RED);
+      } else if(message == "rightDanger" && manual == true){
+          tft.fillRect(122,30,5,100,ST77XX_RED);
+      } else if(message == "frontDanger" && manual == true){
+          tft.fillRect(10,15,110,5,ST77XX_RED);
+      } else if(message == "noLeftDanger" && manual == true){
+          tft.fillRect(2,30,5,100,ST77XX_BLACK);
+      } else if(message == "noRightDanger" && manual == true){
+          tft.fillRect(122,30,5,100,ST77XX_BLACK);
+      } else if(message == "noFrontDanger" && manual == true){
+          tft.fillRect(10,15,110,5,ST77XX_BLACK);
       } else {
         ESP_BT.print(message);
         ESP_BT.print(" is een onbekend commando.");
@@ -120,7 +133,6 @@ void moveChoiceMarker(int x, int y, int b){
       menu = false;
       manualControl();
     } else if(pos == 1){
-      menu = false;
       automaticControl();
     } else if(pos == 2){
       if(action3 == "off"){
@@ -163,15 +175,26 @@ void choiceMenu(){
 void manualControl(void){
   int counter = 0;
   tft.fillScreen(ST77XX_BLACK);
+  tft.fillCircle(115, 7, 3, ST77XX_GREEN);
+  manual = true;
   while(true){
+    tft.setTextColor(ST77XX_BLACK);;
+    tft.setCursor(10,135);
+    tft.print(int(float(100)/float(4095)*yValue)-44);
+    tft.print('%');
+    handleIncomingBTMessages();
     xValue = analogRead(joyX);
     yValue = analogRead(joyY);
     bValue = digitalRead(joyButton);
+    tft.setTextColor(ST77XX_WHITE);;
+    tft.setCursor(10,135);
+    tft.print(int(float(100)/float(4095)*yValue)-44);
+    tft.print('%');
     ESP_BT.print(yValue);
     ESP_BT.print(",");
     ESP_BT.print(xValue);
     ESP_BT.print(",");
-    delay(100);
+    delay(50);
     while(bValue == 0){
       bValue = digitalRead(joyButton);
       delay(100);
@@ -183,18 +206,22 @@ void manualControl(void){
     } else if(counter == 0){
       ESP_BT.println(1);
     } else {
+      tft.fillScreen(ST77XX_BLACK);
       ESP_BT.println(1);
       menu = true;
+      manual = false;
       choiceMenu();
       pos = 0;
       choiceMarker(pos);
       break;
     }
+    tft.fillRect(10,150,110, 5,ST77XX_BLACK);
+    tft.fillRect(10,150,float(110)/float(4095)*xValue, 5,ST77XX_BLUE);
   }
 }
 
 void automaticControl(void){
-  
+  ESP_BT.println("Automatic");
 }
 
 void loop() {
