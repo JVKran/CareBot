@@ -21,6 +21,7 @@ int  c = 1; // For filename
 void exit_signal_handler(int signo);
 
 Mat redFilter(const Mat& src){
+    // Geef alleen de pixels weer waarvan de waarden tussen 0,0,0 en 125,125,255 (RGB) liggen
     assert(src.type() == CV_8UC3);
     Mat redOnly;
     inRange(src, Scalar(0, 0, 0), Scalar(125, 125, 255), redOnly);
@@ -102,7 +103,7 @@ int main () {
         cerr << "Fout tijdens het openen van de Camera!\n";
         return -1;
   }
-  ifstream myfile ("/dev/rfcomm0");
+  ifstream myfile ("/dev/rfcomm0"); //Virtuele seriële poort
   if (myfile.is_open()){
     while ( getline (myfile,line) ){
       cap.read(frame);
@@ -126,11 +127,13 @@ int main () {
             tmp = "";
        	}
       }
+      // Als er meer dan 50000 witte pixels zijn
       if(cv::countNonZero(redOnly) > 50000){
 		cv::Mat left = redOnly(cv::Range(0, redOnly.rows -1), cv::Range(0, redOnly.cols / 2 -1));
 		cv::Mat right = redOnly(cv::Range(0, redOnly.rows -1), cv::Range(redOnly.cols / 2 + 1, redOnly.cols -1));
 		int rightWhite = cv::countNonZero(right);
 		int leftWhite = cv::countNonZero(left);
+	        // Als er links meer witte pixels zijn dan rechts geef dan rode balk weer op scherm (links)
 		if(leftWhite > rightWhite){
 			//cout << "Turn Right!" << endl;
 			system("echo leftDanger# > /dev/rfcomm0");
@@ -141,16 +144,18 @@ int main () {
       } else {
 	    system("echo noDirectionDanger# > /dev/rfcomm0");  
       }
+      // Als de afstand voor kleiner is dan 25cm, geef dan een rode balk boven het scherm weer
       if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 25){
 	      system("echo frontDanger# > /dev/rfcomm0");
       } else {
+	       // Haal de rode balk anders weg
 	       system("echo noFrontDanger# > /dev/rfcomm0");
       }
       tipka = cv::waitKey(30);
       cout << line << endl;
       manualDirection((((stoi(y[0])-2000)/2)-((stoi(y[1])-2048)/4)), (((stoi(y[0])-2000)/2)+((stoi(y[1])-2048)/4)));
       if(stoi(y[2])==0){
-		//Grab function here
+		//Voeg op vrijdag geschreven code nog toe (staat op Pi)
 		}
     }
   } else {
