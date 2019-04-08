@@ -122,8 +122,10 @@ int main () {
        	}
       }
       cout << line << endl;
-      if(stoi(y[0]) > 100){
+      if(stoi(y[0]) > 2000 || stoi(y[0]) < 1600 || stoi(y[1]) > 2000 || stoi(y[1]) < 1600){
       	manualDirection((((stoi(y[0])-2000)/2)-((stoi(y[1])-2048)/4)), (((stoi(y[0])-2000)/2)+((stoi(y[1])-2048)/4)));
+      } else {
+	stop();
       }
       if(stoi(y[2])==0){
 		BP.set_motor_power(PORT_D, 0);
