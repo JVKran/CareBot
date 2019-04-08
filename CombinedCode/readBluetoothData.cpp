@@ -99,6 +99,7 @@ int main () {
   VideoCapture cap;
   cap.open(0);
   char tipka;
+  bool grab = false;
   if (!cap.isOpened()) {
         cerr << "Fout tijdens het openen van de Camera!\n";
         return -1;
@@ -155,8 +156,18 @@ int main () {
       cout << line << endl;
       manualDirection((((stoi(y[0])-2000)/2)-((stoi(y[1])-2048)/4)), (((stoi(y[0])-2000)/2)+((stoi(y[1])-2048)/4)));
       if(stoi(y[2])==0){
-		//Voeg op vrijdag geschreven code nog toe (staat op Pi)
-		}
+		BP.set_motor_power(PORT_D, 0);
+		BP.offset_motor_encoder(PORT_D, BP.get_motor_encoder(PORT_D));
+		int32_t EncoderD = BP.get_motor_encoder(PORT_D);
+		BP.set_motor_position(PORT_D, EncoderD);
+		BP.set_motor_position(PORT_D, -4);
+		grab = true;
+      }
+      if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 8 && grab){
+	BP.set_motor_power(PORT_D, 20);
+	
+	grab = false;
+      }
     }
   } else {
       cout << "Unable to open file"; 
