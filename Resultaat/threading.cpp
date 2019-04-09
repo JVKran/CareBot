@@ -70,6 +70,7 @@ void manualControl(){
   ifstream myfile ("/dev/rfcomm0");
   if(myfile.is_open()){
   while ( getline (myfile,line) ){
+	usleep(1000000);
       tmp = "";
       j = 0;
       for(unsigned int i = 0; i < line.size(); i++){
@@ -84,11 +85,11 @@ void manualControl(){
       }
       cout << line << endl;
       if(stoi(y[0]) > 2000 || stoi(y[0]) < 1600 || stoi(y[1]) > 2000 || stoi(y[1]) < 1600){
-      	BP.set_motor_dps(PORT_B,(((stoi(y[0])-2000)/2-((stoi(y[1])-2048)/4))*1.07));
-	BP.set_motor_dps(PORT_C,(((stoi(y[0])-2000)/2+((stoi(y[1])-2048)/4))));
+      	cout << ((((stoi(y[0])-2000)/2-((stoi(y[1])-2048)/4))*1.07));
+	cout << ((((stoi(y[0])-2000)/2+((stoi(y[1])-2048)/4))));
       } else {
-	BP.set_motor_power(PORT_B, 0);
-    	BP.set_motor_power(PORT_C, 0);
+	BP.set_motor_power(PORT_B, 20);
+    	BP.set_motor_power(PORT_C, 20);
       }
       if(stoi(y[2])==0){
 		BP.set_motor_power(PORT_D, 0);
@@ -99,6 +100,8 @@ void manualControl(){
 		grab = true;
       }
    }
+  } else {
+    cout << "Fout bij openen bestand" << endl;
   }
 }
 
@@ -195,8 +198,10 @@ int main () {
   int j = 0;
   bool grab = false;
   string tmp;
-  thread camera(readCam,Ultrasonic2);
   thread control(manualControl);
+  thread camera(readCam,Ultrasonic2);
+  camera.join();
+  control.join();
   return 0;
 }
 
