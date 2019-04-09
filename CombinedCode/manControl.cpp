@@ -107,6 +107,8 @@ int main () {
   ifstream myfile ("/dev/rfcomm0"); //Virtuele seriële poort
   if (myfile.is_open()){
     while ( getline (myfile,line) ){
+      ofstream outfile;
+      outfile.open("/dev/rfcomm0", ofstream::app);
       cap.read(frame);
       if (frame.empty()) {
             cerr << "Leeg frame!\n";
@@ -137,18 +139,18 @@ int main () {
 	        // Als er links meer witte pixels zijn dan rechts geef dan rode balk weer op scherm (links)
 		if(leftWhite > rightWhite){
 			cout << "Turn Right!" << endl;
-			//system("echo leftDanger# > /dev/rfcomm0");
+			outfile << "leftDanger#";
 		} else {
 			cout << "Turn Left!" << endl;
-			//system("echo rightDanger# > /dev/rfcomm0");
+			outfile << "rightDanger#";
 		}
       } else {
-	    //system("echo noDirectionDanger# > /dev/rfcomm0");  
+	    //outfile << "noDirectionDanger#"; 
       }
       tipka = cv::waitKey(30);
       // Als de afstand voor kleiner is dan 25cm, geef dan een rode balk boven het scherm weer
       if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 25){
-	      //system("echo frontDanger# > /dev/rfcomm0");
+	      outfile << "frontDanger#";
       } else {
 	       // Haal de rode balk anders weg
 	       //system("echo noFrontDanger# > /dev/rfcomm0");
@@ -168,6 +170,7 @@ int main () {
 	
 	grab = false;
       }
+      outfile.close();
     }
   } else {
       cout << "Unable to open file"; 
