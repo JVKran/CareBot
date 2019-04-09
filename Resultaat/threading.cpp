@@ -62,49 +62,6 @@ void readCam(sensor_ultrasonic_t Ultrasonic2){
     // the camera will be deinitialized automatically in VideoCapture destructor
 }
 
-void manualControl(){
-  string line;
-  vector<string> y(3);
-  int j = 0;
-  string tmp;
-  ifstream myfile ("/dev/rfcomm0");
-  if(myfile.is_open()){
-  while ( getline (myfile,line) ){
-	usleep(1000000);
-      tmp = "";
-      j = 0;
-      for(unsigned int i = 0; i < line.size(); i++){
-	if(line[i] != ','){
-            tmp += line[i];
-        }
-        if(line[i] == ',' || line.size()-1 == i){
-            y[j] = tmp;
-	    j++;
-            tmp = "";
-       	}
-      }
-      cout << line << endl;
-      if(stoi(y[0]) > 2000 || stoi(y[0]) < 1600 || stoi(y[1]) > 2000 || stoi(y[1]) < 1600){
-      	cout << ((((stoi(y[0])-2000)/2-((stoi(y[1])-2048)/4))*1.07));
-	cout << ((((stoi(y[0])-2000)/2+((stoi(y[1])-2048)/4))));
-      } else {
-	BP.set_motor_power(PORT_B, 20);
-    	BP.set_motor_power(PORT_C, 20);
-      }
-      if(stoi(y[2])==0){
-		BP.set_motor_power(PORT_D, 0);
-		BP.offset_motor_encoder(PORT_D, BP.get_motor_encoder(PORT_D));
-		int32_t EncoderD = BP.get_motor_encoder(PORT_D);
-		BP.set_motor_position(PORT_D, EncoderD);
-		BP.set_motor_position(PORT_D, -4);
-		grab = true;
-      }
-   }
-  } else {
-    cout << "Fout bij openen bestand" << endl;
-  }
-}
-
 void fwd(int speed=45){
     BP.set_motor_dps(PORT_B, speed*1.07); //ivm ongelijkheid motoren.
     BP.set_motor_dps(PORT_C, speed);
@@ -198,10 +155,50 @@ int main () {
   int j = 0;
   bool grab = false;
   string tmp;
-  thread control(manualControl);
   thread camera(readCam,Ultrasonic2);
+  while(true){
+	  string line;
+	  vector<string> y(3);
+	  int j = 0;
+	  string tmp;
+	  ifstream myfile ("/dev/rfcomm0");
+	  if(myfile.is_open()){
+	  while ( getline (myfile,line) ){
+		usleep(1000000);
+	      tmp = "";
+	      j = 0;
+	      for(unsigned int i = 0; i < line.size(); i++){
+		if(line[i] != ','){
+		    tmp += line[i];
+		}
+		if(line[i] == ',' || line.size()-1 == i){
+		    y[j] = tmp;
+		    j++;
+		    tmp = "";
+		}
+	      }
+	      cout << line << endl;
+	      if(stoi(y[0]) > 2000 || stoi(y[0]) < 1600 || stoi(y[1]) > 2000 || stoi(y[1]) < 1600){
+		cout << ((((stoi(y[0])-2000)/2-((stoi(y[1])-2048)/4))*1.07));
+		cout << ((((stoi(y[0])-2000)/2+((stoi(y[1])-2048)/4))));
+	      } else {
+		BP.set_motor_power(PORT_B, 20);
+		BP.set_motor_power(PORT_C, 20);
+	      }
+	      if(stoi(y[2])==0){
+			BP.set_motor_power(PORT_D, 0);
+			BP.offset_motor_encoder(PORT_D, BP.get_motor_encoder(PORT_D));
+			int32_t EncoderD = BP.get_motor_encoder(PORT_D);
+			BP.set_motor_position(PORT_D, EncoderD);
+			BP.set_motor_position(PORT_D, -4);
+			grab = true;
+	      }
+	   }
+	  } else {
+	    cout << "Fout bij openen bestand" << endl;
+	  }  
+  }
   camera.join();
-  control.join();
   return 0;
 }
 
