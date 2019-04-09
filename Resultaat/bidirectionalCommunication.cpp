@@ -153,7 +153,9 @@ int main () {
 	       write(fd,"noFrontDanger#",50);
       }
       cout << line << endl;
-      manualDirection((((stoi(y[0])-2000)/2)-((stoi(y[1])-2048)/4)), (((stoi(y[0])-2000)/2)+((stoi(y[1])-2048)/4)));
+      if(stoi(y[0]) > 2000 || stoi(y[0]) < 1600 || stoi(y[1]) > 2000 || stoi(y[1]) < 1600){
+      	manualDirection((((stoi(y[0])-2000)/2)-((stoi(y[1])-2048)/4)), (((stoi(y[0])-2000)/2)+((stoi(y[1])-2048)/4)));
+      }
       if(stoi(y[2])==0){
 		BP.set_motor_power(PORT_D, 0);
 		BP.offset_motor_encoder(PORT_D, BP.get_motor_encoder(PORT_D));
