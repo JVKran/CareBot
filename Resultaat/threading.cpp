@@ -154,49 +154,45 @@ int main () {
   vector<string> y(3);
   int j = 0;
   bool grab = false;
-  string tmp;
   thread camera(readCam,Ultrasonic2);
-  while(true){
-	  string line;
-	  vector<string> y(3);
-	  int j = 0;
-	  string tmp;
-	  ifstream myfile ("/dev/rfcomm0");
-	  if(myfile.is_open()){
-	  while ( getline (myfile,line) ){
-		usleep(1000000);
-	      tmp = "";
-	      j = 0;
-	      for(unsigned int i = 0; i < line.size(); i++){
-		if(line[i] != ','){
-		    tmp += line[i];
-		}
-		if(line[i] == ',' || line.size()-1 == i){
-		    y[j] = tmp;
-		    j++;
-		    tmp = "";
-		}
-	      }
-	      cout << line << endl;
-	      if(stoi(y[0]) > 2000 || stoi(y[0]) < 1600 || stoi(y[1]) > 2000 || stoi(y[1]) < 1600){
-		cout << ((((stoi(y[0])-2000)/2-((stoi(y[1])-2048)/4))*1.07));
-		cout << ((((stoi(y[0])-2000)/2+((stoi(y[1])-2048)/4))));
-	      } else {
-		BP.set_motor_power(PORT_B, 20);
-		BP.set_motor_power(PORT_C, 20);
-	      }
-	      if(stoi(y[2])==0){
-			BP.set_motor_power(PORT_D, 0);
-			BP.offset_motor_encoder(PORT_D, BP.get_motor_encoder(PORT_D));
-			int32_t EncoderD = BP.get_motor_encoder(PORT_D);
-			BP.set_motor_position(PORT_D, EncoderD);
-			BP.set_motor_position(PORT_D, -4);
-			grab = true;
-	      }
-	   }
-	  } else {
-	    cout << "Fout bij openen bestand" << endl;
-	  }  
+  string tmp;
+  ifstream myfile ("/dev/rfcomm0");
+  if (myfile.is_open()){
+    while ( getline (myfile,line) ){
+      tmp = "";
+      j = 0;
+      for(unsigned int i = 0; i < line.size(); i++){
+	if(line[i] != ','){
+            tmp += line[i];
+        }
+        if(line[i] == ',' || line.size()-1 == i){
+            y[j] = tmp;
+	    j++;
+            tmp = "";
+       	}
+      }
+      cout << line << endl;
+      if(stoi(y[0]) > 2000 || stoi(y[0]) < 1600 || stoi(y[1]) > 2000 || stoi(y[1]) < 1600){
+      	manualDirection((((stoi(y[0])-2000)/2)-((stoi(y[1])-2048)/4)), (((stoi(y[0])-2000)/2)+((stoi(y[1])-2048)/4)));
+      } else {
+	stop();
+      }
+      if(stoi(y[2])==0){
+		BP.set_motor_power(PORT_D, 0);
+		BP.offset_motor_encoder(PORT_D, BP.get_motor_encoder(PORT_D));
+		int32_t EncoderD = BP.get_motor_encoder(PORT_D);
+		BP.set_motor_position(PORT_D, EncoderD);
+		BP.set_motor_position(PORT_D, -4);
+		grab = true;
+      }
+      if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 8 && grab){
+	BP.set_motor_power(PORT_D, 20);
+	
+	grab = false;
+      }
+    }
+  } else {
+      cout << "Unable to open file"; 
   }
   camera.join();
   return 0;
