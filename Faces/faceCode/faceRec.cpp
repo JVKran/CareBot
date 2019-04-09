@@ -40,8 +40,8 @@ static void read_csv(const string& filename, vector<Mat>& images, vector<int>& l
         stringstream liness(line);
         getline(liness, path, separator);
         getline(liness, classlabel);
-        if(!path.empty() && !classlabel.empty()) {
-            images.push_back(imread(path, 0));
+        if(!path.empty() && !classlabel.empty()) {  
+	    images.push_back(imread(path, 0));
             labels.push_back(atoi(classlabel.c_str()));
         }
     }
@@ -102,7 +102,9 @@ int main(int argc, const char *argv[]) {
         Mat original = frame.clone();
         // Convert the current frame to grayscale:
         Mat gray;
-        cvtColor(original, gray, CV_BGR2GRAY);
+       
+	cvtColor(original, gray, CV_BGR2GRAY);
+						
         // Find the faces in the frame:
         vector< Rect_<int> > faces;
         haar_cascade.detectMultiScale(gray, faces);
@@ -132,7 +134,16 @@ int main(int argc, const char *argv[]) {
             // First of all draw a green rectangle around the detected face:
             rectangle(original, face_i, CV_RGB(0, 255,0), 1);
             // Create the text we will annotate the box with:
-            string box_text = format("Prediction = %d", prediction);
+	    string box_text;
+	    if(prediction == 10){
+		box_text = format("Faizal");
+ 	    }
+	    else if(prediction == 30){
+		box_text = format("Menno");
+	    }
+	    else{
+            box_text = format("Inbreker!");
+	    }
             // Calculate the position for annotated text (make sure we don't
             // put illegal values in there):
             int pos_x = std::max(face_i.tl().x - 10, 0);
