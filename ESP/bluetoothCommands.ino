@@ -28,6 +28,7 @@ NewRemoteTransmitter actionTransmitter(54973440, 16, 261, 3);
 
 int incoming;
 String message;
+bool notifyNext = false;
 
 void choiceMarker(int pos, String color = "white"){
   if(menu){
@@ -41,13 +42,12 @@ void choiceMarker(int pos, String color = "white"){
   }
 }
 
-
 void setup() {
   tft.initR(INITR_BLACKTAB);
   tft.fillScreen(ST77XX_BLACK);
+  tft.fillCircle(120, 7, 3, ST77XX_RED);
   choiceMenu();
   choiceMarker(pos);
-  tft.fillCircle(120, 7, 3, ST77XX_RED);
   Serial.begin(9600); //Start Serial monitor in 9600
   ESP_BT.begin("CareBot"); //Name of your Bluetooth Signal
   Serial.println("Klaar om te verbinden!");
@@ -64,7 +64,7 @@ void handleIncomingBTMessages(void){
     if(incoming!='#'){
       message.concat(char(incoming));   
     } else {
-      if(message=="lightOn"){
+      if(message=="\nlightOn"){
         ESP_BT.println("Licht aan!");
         actionTransmitter.sendUnit(3, true);
         action3 = "on";
@@ -73,7 +73,7 @@ void handleIncomingBTMessages(void){
           tft.setTextColor(ST77XX_GREEN);
           tft.print("Licht");
         }
-      } else if(message=="lightOff"){
+      } else if(message=="\nlightOff"){
         ESP_BT.println("Licht uit!");
         actionTransmitter.sendUnit(3, false);
         action3 = "off";
@@ -82,20 +82,18 @@ void handleIncomingBTMessages(void){
           tft.setTextColor(ST77XX_RED);
           tft.print("Licht");
         }
-      } else if(message == "leftDanger" && manual == true){
+      } else if(message.indexOf("eftDang") > 0 && manual == true){
           tft.fillRect(2,30,5,100,ST77XX_RED);
-      } else if(message == "rightDanger" && manual == true){
+      } else if(message.indexOf("ghtDang") > 0 && manual == true){
           tft.fillRect(122,30,5,100,ST77XX_RED);
-      } else if(message == "frontDanger" && manual == true){
+      } else if(message.indexOf("oFrontDang") > 0 && manual == true){
+          tft.fillRect(10,15,110,5,ST77XX_BLACK);
+          Serial.println("balk front weg");
+      } else if(message.indexOf("ontDang") > 0 && manual == true){
           tft.fillRect(10,15,110,5,ST77XX_RED);
-      } else if(message == "noDirectionDanger" && manual == true){
+      } else if(message.indexOf("oDirectionDan") > 0 && manual == true){
           tft.fillRect(2,30,5,100,ST77XX_BLACK);
           tft.fillRect(122,30,5,100,ST77XX_BLACK);
-      } else if(message == "noFrontDanger" && manual == true){
-          tft.fillRect(10,15,110,5,ST77XX_BLACK);
-      } else {
-        ESP_BT.print(message);
-        ESP_BT.print(" is een onbekend commando.");
       }
       Serial.println(message);
       message="";
@@ -129,10 +127,19 @@ void moveChoiceMarker(int x, int y, int b){
   }
   if(b == 0){
     if(pos == 0){
+      if(notifyNext){
+        ESP_BT.println("5");
+        notifyNext = false;
+      }
       menu = false;
       manualControl();
     } else if(pos == 1){
-      automaticControl();
+      if(notifyNext){
+        ESP_BT.println("4");
+        notifyNext = false;
+      }
+      menu = false;
+      fluentControl();
     } else if(pos == 2){
       if(action3 == "off"){
         actionTransmitter.sendUnit(3, true);
@@ -158,7 +165,7 @@ void choiceMenu(){
   tft.setCursor(20,5);
   tft.print("Handmatig");
   tft.setCursor(20,15);
-  tft.print("Automatisch");
+  tft.print("Vloeiend");
   tft.setCursor(20,25);
   tft.print("Schakel");
   tft.setCursor(65,25);
@@ -172,6 +179,55 @@ void choiceMenu(){
 }
 
 void manualControl(void){
+  int counter = 0;
+  tft.fillScreen(ST77XX_BLACK);
+  tft.fillCircle(115, 7, 3, ST77XX_GREEN);
+  manual = true;
+  while(true){
+    tft.setTextColor(ST77XX_BLACK);;
+    tft.setCursor(10,135);
+    tft.print(int(float(100)/float(4095)*yValue)-44);
+    tft.print('%');
+    handleIncomingBTMessages();
+    xValue = analogRead(joyX);
+    yValue = analogRead(joyY);
+    bValue = digitalRead(joyButton);
+    tft.setTextColor(ST77XX_WHITE);;
+    tft.setCursor(10,135);
+    tft.print(int(float(100)/float(4095)*yValue)-44);
+    tft.print('%');
+    ESP_BT.print(yValue);
+    ESP_BT.print(",");
+    ESP_BT.print(xValue);
+    ESP_BT.print(",");
+    delay(500);
+    while(bValue == 0){
+      bValue = digitalRead(joyButton);
+      delay(100);
+      counter++;
+    }
+    if(counter < 10 && counter >= 1){
+      ESP_BT.println(0);
+      counter = 0;
+    } else if(counter == 0){
+      ESP_BT.println(1);
+    } else {
+      tft.fillScreen(ST77XX_BLACK);
+      ESP_BT.println(1);
+      menu = true;
+      manual = false;
+      choiceMenu();
+      pos = 0;
+      choiceMarker(pos);
+      notifyNext = true;
+      break;
+    }
+    tft.fillRect(10,150,110, 5,ST77XX_BLACK);
+    tft.fillRect(10,150,float(110)/float(4095)*xValue, 5,ST77XX_BLUE);
+  }
+}
+
+void fluentControl(void){
   int counter = 0;
   tft.fillScreen(ST77XX_BLACK);
   tft.fillCircle(115, 7, 3, ST77XX_GREEN);
@@ -212,15 +268,12 @@ void manualControl(void){
       choiceMenu();
       pos = 0;
       choiceMarker(pos);
+      notifyNext = true;
       break;
     }
     tft.fillRect(10,150,110, 5,ST77XX_BLACK);
     tft.fillRect(10,150,float(110)/float(4095)*xValue, 5,ST77XX_BLUE);
   }
-}
-
-void automaticControl(void){
-  ESP_BT.println("Automatic");
 }
 
 void loop() {
