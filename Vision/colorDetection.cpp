@@ -24,7 +24,7 @@ Mat redFilter(const Mat& src){
     assert(src.type() == CV_8UC3);
 
     Mat redOnly;
-    inRange(src, Scalar(0, 0, 0), Scalar(125, 125, 255), redOnly);
+    inRange(src, Scalar(0, 0, 0), Scalar(80, 80, 255), redOnly);
 
     return redOnly;
 }
