@@ -1,10 +1,8 @@
 #include <iostream>
-#include <unistd.h>
 #include <fstream>
 #include <vector>
 #include <signal.h>
 #include "BrickPi3.h"
-#include <iomanip>
 
 using namespace std;
 
@@ -13,16 +11,10 @@ BrickPi3 BP;
 bool grab = false;
 void exit_signal_handler(int signo);
 
-void fwd(int speed=45){
-    BP.set_motor_dps(PORT_B, speed*1.07); //ivm ongelijkheid motoren.
-    BP.set_motor_dps(PORT_C, speed);
-}
-
 void stop(void){
     BP.set_motor_power(PORT_B, 0);
     BP.set_motor_power(PORT_C, 0);
 }
-
 
 bool initialize(){
     if(BP.get_voltage_battery() < 10.85){
@@ -32,11 +24,7 @@ bool initialize(){
     } else {
         cout << "Batterijspanning is goed. Namelijk " << BP.get_voltage_battery() << "V." << endl << endl;
     }
-    BP.set_sensor_type(PORT_1, SENSOR_TYPE_NXT_COLOR_FULL);
-    BP.set_sensor_type(PORT_2, SENSOR_TYPE_NXT_ULTRASONIC);
-    BP.set_sensor_type(PORT_3, SENSOR_TYPE_NXT_LIGHT_ON);
-    BP.set_sensor_type(PORT_4, SENSOR_TYPE_TOUCH);
-    BP.set_sensor_type(PORT_2, SENSOR_TYPE_NXT_ULTRASONIC);
+
     BP.set_motor_limits(PORT_B, 100, 0);
     BP.set_motor_limits(PORT_C, 100, 0);
 }
@@ -57,10 +45,7 @@ int main () {
         BP.reset_all();
         exit(-2);
     }
-    sensor_color_t      Color1;
-    sensor_ultrasonic_t Ultrasonic2;
-    sensor_light_t      Light3;
-    sensor_touch_t      Touch4;
+
     string line;
     vector<string> y(3);
     int j = 0;
@@ -88,7 +73,6 @@ int main () {
             } else {
                 stop();
             }
-
 
             if(stoi(y[2])==0 && !grab && odd){
                 BP.set_motor_power(PORT_D, 0);
