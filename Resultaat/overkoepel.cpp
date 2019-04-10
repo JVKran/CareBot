@@ -11,27 +11,78 @@
 
 
 using namespace std;
-int sc1(string uittevoeren){
+int sc4(){
 	pid_t pid = fork();
 	if(pid ==0){
 		char *args[] = {};
-		execv("uittevoeren",args);
+		execv("./autoControl",args);
 	}
 	else if(pid >0){
 	int exit_status;
 	wait(&exit_status);
-	return(exit_status);
+	return(WEXITSTATUS(exit_status));
 	}
 }
+int sc5(){
+	pid_t pid = fork();
+	if(pid ==0){
+		char *args[] = {(char*) "/usr/share/opencv/haarcascades/haarcascade_frontalface_default.xml", (char*) "/home/pi/piprograms/Camera/Face/trainFace.txt", (char*) "0"};
+		execv("./faceRec",args);
+	}
+	else if(pid >0){
+	int exit_status;
+	wait(&exit_status);
+	return(WEXITSTATUS(exit_status));
+	}
+}
+int sc6(){
+	pid_t pid = fork();
+	if(pid ==0){
+		char *args[] = {};
+		execv("./manControl",args);
+	}
+	else if(pid >0){
+	int exit_status;
+	wait(&exit_status);
+	return(WEXITSTATUS(exit_status));
+	}
+}
+int sc7(){
+	pid_t pid = fork();
+	if(pid ==0){
+		char *args[] = {};
+		execv("./grijper",args);
+	}
+	else if(pid >0){
+	int exit_status;
+	wait(&exit_status);
+	return(WEXITSTATUS(exit_status));
+	}
+}
+int sc8(){
+	pid_t pid = fork();
+	if(pid ==0){
+		char *args[] = {};
+		execv("./info",args);
+	}
+	else if(pid >0){
+	int exit_status;
+	wait(&exit_status);
+	return(1);
+	}
+}
+
+
 int main(){
 int exit_status=6;
 
 while(1){
-if(exit_status==4){sc1("./autoControl");}
-else if(exit_status ==5){sc1("./faceRec");}
-else if(exit_status ==6){sc1("./completeManualControl");}
-else if(exit_status ==7){sc1("./grijper");}
-else{sc1("./prog1");}
+cout <<"status            " << exit_status<<endl;
+if(exit_status==4){exit_status = sc4();}
+else if(exit_status ==5){cout <<"code 5"<<endl;exit_status = sc5();}
+else if(exit_status ==6){cout<<"code 6"<<endl;exit_status = sc6();}
+else if(exit_status ==7){exit_status = sc7();}
+else{sc8();return(1);}
 }
 
 }
