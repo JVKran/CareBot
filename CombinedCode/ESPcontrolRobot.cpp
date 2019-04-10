@@ -88,21 +88,21 @@ int main () {
                 stop();
             }
 
-            int odd = 1;
+            bool odd = true;
 
-            if(stoi(y[2])==0 && !grab && odd%2==1){
+            if(stoi(y[2])==0 && !grab && odd){
                 BP.set_motor_power(PORT_D, 0);
                 BP.set_motor_position(PORT_D, -4);
                 grab = true;
-                odd++;
+                odd = false;
                 cout << "open\n";
-            }else if(stoi(y[2])==0 && grab && odd%2==1){
+            }else if(stoi(y[2])==0 && grab && odd){
                 BP.set_motor_power(PORT_D, 20);
                 grab = false;
-                odd++;
+                odd = false;
                 cout << "dicht\n";
             }else{
-                odd++;
+                odd = true;
             }
         }
     } else {
