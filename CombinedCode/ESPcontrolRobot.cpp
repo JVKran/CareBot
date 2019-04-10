@@ -87,17 +87,22 @@ int main () {
             } else {
                 stop();
             }
-            if(stoi(y[2])==0 && !grab){
+
+            int odd = 1;
+
+            if(stoi(y[2])==0 && !grab && odd%2==1){
                 BP.set_motor_power(PORT_D, 0);
                 BP.set_motor_position(PORT_D, -4);
                 grab = true;
+                odd++;
                 cout << "open\n";
-                fwd(60);
-                usleep(5000000);
-            } else if(stoi(y[2])==0 && grab){
+            }else if(stoi(y[2])==0 && grab && odd%2==1){
                 BP.set_motor_power(PORT_D, 20);
                 grab = false;
+                odd++;
                 cout << "dicht\n";
+            }else{
+                odd++;
             }
         }
     } else {
