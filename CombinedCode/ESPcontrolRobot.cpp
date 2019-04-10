@@ -96,15 +96,12 @@ int main () {
                 grab = true;
                 odd = false;
                 cout << "open\n";
-                usleep(100000);
             }else if(stoi(y[2])==0 && grab && odd){
                 BP.set_motor_power(PORT_D, 20);
                 grab = false;
                 odd = false;
                 cout << "dicht\n";
-                usleep(100000);
             }else{
-                cout << "why: "<< endl;
                 odd = true;
             }
         }
