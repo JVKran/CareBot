@@ -6,3 +6,19 @@ lowS: 0
 HighS: 255
 lowV: 255
 HighV: 255
+
+Waarde voor rood en geel op wit bord:
+lowH: 0
+HighH: 51
+lowS: 173
+HighS: 255
+lowV: 80
+HighV: 132
+
+Template:
+lowH: 
+HighH: 
+lowS: 
+HighS: 
+lowV: 
+HighV: 
