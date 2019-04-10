@@ -4,5 +4,5 @@ lowH: 0
 HighH: 10
 lowS: 0
 HighS: 255
-lowV: 0
+lowV: 255
 HighV: 255
