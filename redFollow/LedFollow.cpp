@@ -77,14 +77,14 @@ void down(int speed=-45){
 
     namedWindow("Control", CV_WINDOW_AUTOSIZE); //create a window called "Control"
 
-  int iLowH = 0;
- int iHighH = 51;
+  int iLowH = 0;//Hue (0 - 179)De kleur
+ int iHighH = 179;
 
-  int iLowS = 173; 
+  int iLowS = 0; //Saturation (0 - 255)Hoeveel het met wit mixed
  int iHighS = 255;
 
-  int iLowV = 80;
- int iHighV = 132;
+  int iLowV = 255; //Value (0 - 255) Hoeveel het met zwart mixed
+ int iHighV = 255;
 
   //Create trackbars in "Control" window
  cvCreateTrackbar("LowH", "Control", &iLowH, 179); //Hue (0 - 179)
@@ -126,30 +126,31 @@ void down(int speed=-45){
 
    	imshow("Thresholded Image", imgThresholded); //show the thresholded image
   	imshow("Original", imgOriginal); //show the original image
-	
+	cout <<"Trash: "<<cv::countNonZero(imgThresholded) << endl;
 
-	if(cv::countNonZero(imgThresholded) > 1000){
+	if(cv::countNonZero(imgThresholded) > 100){
 		cv::Mat left = imgThresholded(cv::Range(0, imgThresholded.rows -1), cv::Range(0, imgThresholded.cols / 2 -1));
 		cv::Mat right = imgThresholded(cv::Range(0, imgThresholded.rows -1), cv::Range(imgThresholded.cols / 2 + 1, imgOriginal.cols -1));
 		int rightWhite = cv::countNonZero(right);
 		int leftWhite = cv::countNonZero(left);
 		cout << "links: "<<leftWhite << endl;
 		cout << "rechts: "<<rightWhite << endl;
-		if(rightWhite ==0){
+		if(rightWhite <= 500 ){
 			//cout << "Turn left!" << endl;
-			solidLeft(200);
-		} else if(leftWhite == 0){
+			solidLeft(20);
+			
+		} else if(leftWhite <= 500){
 			//cout << "Turn right!" << endl;
-			solidRight(200);
+			solidRight(20);
 			
-		}else if(rightWhite>500 &&leftWhite>500){
-			fwd(60);
+		}else if(rightWhite>300 &&leftWhite>300){
+			fwd(600);
 			
-		}else{
-			stop();
-			}
+		}
 	}
-	
+	if(cv::countNonZero(imgThresholded) < 100){
+		stop();
+	}
 
         if (waitKey(30) == 27) //wait for 'esc' key press for 30ms. If 'esc' key is pressed, break loop
        {
