@@ -111,10 +111,10 @@ int main(int, char**){
 	time_t current_time;
 	current_time = time(NULL);
 	if(current_time %5==0){
-        getline (myfile,line);
-        if(line.size() == 1){
-          cout << "Ga nu exiten... DDDDDOOOOOOOOEEEEEEEIIIIIII!!!!!!!" << line << endl;
-	  exit(stoi(line)); 
+        	getline (myfile,line);
+        	if(line.size() == 1){
+          	cout << "Ga nu exiten... DDDDDOOOOOOOOEEEEEEEIIIIIII!!!!!!!" << line << endl;
+	  	exit(stoi(line)); 
 	}
         }
         // wait for a new frame from camera and store it into 'frame'
