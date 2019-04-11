@@ -137,13 +137,14 @@ void down(int speed=-45){
 		cout << "rechts: "<<rightWhite << endl;
 		if(rightWhite <= 500 ){
 			//cout << "Turn left!" << endl;
-			solidLeft(200);
+			solidLeft(20);
+			
 		} else if(leftWhite <= 500){
 			//cout << "Turn right!" << endl;
-			solidRight(200);
+			solidRight(20);
 			
-		}else if(rightWhite>500 &&leftWhite>500){
-			fwd(400);
+		}else if(rightWhite>300 &&leftWhite>300){
+			fwd(600);
 			
 		}
 	}
