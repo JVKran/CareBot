@@ -71,12 +71,14 @@ def process_event(event):
     if event.type == EventType.ON_RECOGNIZING_SPEECH_FINISHED and event.args:
         print('You said:', event.args['text'])
         text = event.args['text'].lower()
-        if text == 'zet projectschakelaar aan':
+        if text == 'zet project aan':
                 subprocess.run(["echo lightOn# > /dev/rfcomm0"], shell=True)
-        if text == 'start het project op':
-                subprocess.run(["./home/pi/piprograms/Combinedcode/test"], shell=True)
-         
-        
+        if text == 'zet project uit':
+                subprocess.run(["echo lightOff# > /dev/rfcomm0"], shell=True)
+        if text == 'kom naar me toe':
+                subprocess.run(["/home/pi/Desktop/Resultaat/ledCamera"], shell=True)
+        if text == 'wie zie ik nu':
+                subprocess.run(["/home/pi/Desktop/Resultaat/faceRec"], shell=True)
             
 
 def main():
