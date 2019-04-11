@@ -78,13 +78,13 @@ void down(int speed=-45){
     namedWindow("Control", CV_WINDOW_AUTOSIZE); //create a window called "Control"
 
   int iLowH = 0;//Hue (0 - 179)De kleur
- int iHighH = 51;
+ int iHighH = 179;
 
-  int iLowS = 173; //Saturation (0 - 255)Hoeveel het met wit mixed
+  int iLowS = 0; //Saturation (0 - 255)Hoeveel het met wit mixed
  int iHighS = 255;
 
-  int iLowV = 80; //Value (0 - 255) Hoeveel het met zwart mixed
- int iHighV = 132;
+  int iLowV = 255; //Value (0 - 255) Hoeveel het met zwart mixed
+ int iHighV = 255;
 
   //Create trackbars in "Control" window
  cvCreateTrackbar("LowH", "Control", &iLowH, 179); //Hue (0 - 179)
