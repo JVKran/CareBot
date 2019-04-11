@@ -12,51 +12,52 @@
 
 using namespace std;
 int sc4(){
-	pid_t pid = fork();
-	if(pid ==0){
-		char *args[] = {};
-		execv("./autoControl",args);
-	}
-	else if(pid >0){
-	int exit_status;
-	wait(&exit_status);
-	return(WEXITSTATUS(exit_status));
-	}
-}
-int sc5(){
-	pid_t pid = fork();
-	if(pid ==0){
-		char *args[] = {(char*) "/usr/share/opencv/haarcascades/haarcascade_frontalface_default.xml", (char*) "/home/pi/piprograms/Camera/Face/trainFace.txt", (char*) "0"};
-		execv("./faceRec",args);
-	}
-	else if(pid >0){
-	int exit_status;
-	wait(&exit_status);
-	return(WEXITSTATUS(exit_status));
-	}
-}
-int sc6(){
+	
 	pid_t pid = fork();
 	if(pid ==0){
 		char *args[] = {};
 		execv("./manControl",args);
 	}
 	else if(pid >0){
-	int exit_status;
-	wait(&exit_status);
-	return(WEXITSTATUS(exit_status));
+		int exit_status;
+		wait(&exit_status);
+		return(WEXITSTATUS(exit_status));
+	}
+}
+int sc5(){
+	pid_t pid = fork();
+	if(pid ==0){
+		char *args[] = {};
+		execv("./autoControl",args);
+	}
+	else if(pid >0){
+		int exit_status;
+		wait(&exit_status);
+		return(WEXITSTATUS(exit_status));
+	}
+}
+int sc6(){
+	pid_t pid = fork();
+	if(pid ==0){
+		char *args[] = {(char*) "/usr/share/opencv/haarcascades/haarcascade_frontalface_default.xml", (char*) "/home/pi/piprograms/Camera/Face/trainFace.txt", char(0) };
+		execv("/faceRec",args);
+	}
+	else if(pid >0){
+		int exit_status;
+		wait(&exit_status);
+		return(WEXITSTATUS(exit_status));
 	}
 }
 int sc7(){
 	pid_t pid = fork();
 	if(pid ==0){
 		char *args[] = {};
-		execv("./grijper",args);
+		execv("./ledCamera",args);
 	}
 	else if(pid >0){
-	int exit_status;
-	wait(&exit_status);
-	return(WEXITSTATUS(exit_status));
+		int exit_status;
+		wait(&exit_status);
+		return(WEXITSTATUS(exit_status));
 	}
 }
 int sc8(){
@@ -66,15 +67,15 @@ int sc8(){
 		execv("./info",args);
 	}
 	else if(pid >0){
-	int exit_status;
-	wait(&exit_status);
-	return(1);
+		int exit_status;
+		wait(&exit_status);
+		return(1);
 	}
 }
 
 
 int main(){
-int exit_status=6;
+int exit_status=4;
 
 while(1){
 cout <<"status            " << exit_status<<endl;
