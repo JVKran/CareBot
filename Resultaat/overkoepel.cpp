@@ -1,3 +1,6 @@
+//dit programma zal, afhankelijk van de exitstatus van het vorige programma een nieuw programma openen, het eerste programma is altijd mancontrol
+//we gebruiken exitcodes 4,5,6,7 voor respectievelijk de programma's manControl, autoControl,faceRec en ledCamera. indien er een andere exitcode uitkomt wordt het programma stop aangeroepen, die stopt alle moteren direct, dit omdat een script dat crasht die niet per se zelf doet
+
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -64,7 +67,7 @@ int sc8(){
 	pid_t pid = fork();
 	if(pid ==0){
 		char *args[] = {};
-		execv("./info",args);
+		execv("./stop",args);
 	}
 	else if(pid >0){
 		int exit_status;
@@ -78,8 +81,8 @@ int main(){
 int exit_status=4;
 
 while(1){
-cout <<"status            " << exit_status<<endl;
-if(exit_status==4){exit_status = sc4();}
+cout <<"status            " << exit_status<<endl;	//geeft aan welk programma geopend gaat worden
+if(exit_status==4){exit_status = sc4();}		
 else if(exit_status ==5){cout <<"code 5"<<endl;exit_status = sc5();}
 else if(exit_status ==6){cout<<"code 6"<<endl;exit_status = sc6();}
 else if(exit_status ==7){exit_status = sc7();}
