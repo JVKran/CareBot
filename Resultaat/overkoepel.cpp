@@ -1,5 +1,7 @@
 //dit programma zal, afhankelijk van de exitstatus van het vorige programma een nieuw programma openen, het eerste programma is altijd mancontrol
-//we gebruiken exitcodes 4,5,6,7 voor respectievelijk de programma's manControl, autoControl,faceRec en ledCamera. indien er een andere exitcode uitkomt wordt het programma stop aangeroepen, die stopt alle moteren direct, dit omdat een script dat crasht die niet per se zelf doet
+//we gebruiken exitcodes 4,5,6,7 voor respectievelijk de programma's manControl, autoControl,faceRec en ledCamera. 
+//indien er een andere exitcode uitkomt wordt het programma stop aangeroepen, 
+//die stopt alle moteren direct, dit omdat een script dat crasht die niet per se zelf doet, hierna stopt overkoepel.cpp
 
 #include <string>
 #include <iostream>
@@ -86,7 +88,7 @@ if(exit_status==4){exit_status = sc4();}	//roept functie 4 aan als de exitcode 4
 else if(exit_status ==5){cout <<"code 5"<<endl;exit_status = sc5();}
 else if(exit_status ==6){cout<<"code 6"<<endl;exit_status = sc6();}
 else if(exit_status ==7){exit_status = sc7();}
-else{sc8();return(1);}
+else{sc8();return(1);} // roep bij onverwachte exitcode stop aan en stop overkoepel.cpp
 }
 
 }
