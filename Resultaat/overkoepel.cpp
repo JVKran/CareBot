@@ -14,17 +14,17 @@
 
 
 using namespace std;
-int sc4(){
+int sc4(){	
 	
-	pid_t pid = fork();
+	pid_t pid = fork();			//forkt het proces
 	if(pid ==0){
 		char *args[] = {};
-		execv("./manControl",args);
+		execv("./manControl",args);	//child start volgend proces op
 	}
 	else if(pid >0){
 		int exit_status;
-		wait(&exit_status);
-		return(WEXITSTATUS(exit_status));
+		wait(&exit_status);			//parent wacht op dood van kind
+		return(WEXITSTATUS(exit_status));	//exitstatus wordt naar interperteerbaar formaat omgezet en gereturned
 	}
 }
 int sc5(){
@@ -82,7 +82,7 @@ int exit_status=4;
 
 while(1){
 cout <<"status            " << exit_status<<endl;	//geeft aan welk programma geopend gaat worden
-if(exit_status==4){exit_status = sc4();}		
+if(exit_status==4){exit_status = sc4();}	//roept functie 4 aan als de exitcode 4 is, zelfde maar andere nummers voor volgende functies	
 else if(exit_status ==5){cout <<"code 5"<<endl;exit_status = sc5();}
 else if(exit_status ==6){cout<<"code 6"<<endl;exit_status = sc6();}
 else if(exit_status ==7){exit_status = sc7();}
