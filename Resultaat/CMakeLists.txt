@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 2.8)
+set(CMAKE_CXX_STANDARD 17)
+project( faceRec )
+find_package( OpenCV REQUIRED )
+add_executable(faceRec faceRec.cpp BrickPi3.cpp BrickPi3.h)
+target_link_libraries( faceRec ${OpenCV_LIBS} )
