@@ -2,7 +2,7 @@
 #include <iostream>      	// for cout
 #include <unistd.h>     	// for sleep
 #include <signal.h>     	// for catching exit signals
-#include <iomanip>		// for setw and setprecision
+#include <iomanip>		    // for setw and setprecision
 
 using namespace std;
 
@@ -14,29 +14,32 @@ bool initialize(){
     BP.set_sensor_type(PORT_1, SENSOR_TYPE_NXT_COLOR_FULL);
     BP.set_sensor_type(PORT_2, SENSOR_TYPE_NXT_ULTRASONIC);
     BP.set_sensor_type(PORT_3, SENSOR_TYPE_NXT_LIGHT_ON);
-    BP.set_sensor_type(PORT_4, SENSOR_TYPE_TOUCH);
-    BP.set_sensor_type(PORT_2, SENSOR_TYPE_NXT_ULTRASONIC);
     BP.set_motor_limits(PORT_B, 60, 0);
     BP.set_motor_limits(PORT_C, 60, 0);
 }
 
 bool calibrate(int & black, int & white, sensor_light_t Light3){
-    char input;
-    cout << "Plaats op achtergrond en voer 'y' in.";
-    cin >> input;
-    if(input == 'y'){
-        BP.get_sensor(PORT_3, Light3);
-        white = Light3.reflected;
+    char input;                                                 //wordt gebruikt voor de gebruikers input
+    cout << "Plaats op achtergrond en voer 'y' in.";                 
+    cin >> input;                                               //wacht op invoer van de gebruiker
+    
+    //bepaald welke waarde de ondergrond heeft
+    if(input == 'y'){                                           //checked of de invoer van de gebruiker gelijk is aan 'y'
+        BP.get_sensor(PORT_3, Light3);                          //zet de sensor aan
+        white = Light3.reflected;                               //leest de sensor uit en geeft de waarde aan de int white mee
     }
     cout << "Plaats op lijn en voer 'y' in.";
-    cin >> input;
-    if(input == 'y'){
-        BP.get_sensor(PORT_3, Light3);
-        black = Light3.reflected;
+    cin >> input;                                               //vraagt weer om invoer van de gebruiker
+    
+    //bepaald welke waarde de lijn heeft
+    if(input == 'y'){                                           //checked of de invoer van de gebruiker gelijk is aan 'y'
+        BP.get_sensor(PORT_3, Light3);                          //zet de sensor aan
+        black = Light3.reflected;                               //leest de sensor uit en geeft de waarde aan de int black mee
     }
-    return true;
+    return true;                                                
 }
 
+//functie die er voor zorgt dat de robot stopt met rijden als dat nodig is
 void stop(void){
     BP.set_motor_power(PORT_B, 0);
     BP.set_motor_power(PORT_C, 0);
@@ -65,28 +68,33 @@ void circle(int duration=5, int speed=50, int insideSpeed=2){
     }
 }
 
+//functie om naar voren te rijden
 void fwd(int speed=45){
     BP.set_motor_power(PORT_B, speed*1.07); //ivm ongelijkheid motoren.
     BP.set_motor_power(PORT_C, speed);
 }
 
+//functie om naar links te draaien met dps
 void left(int speed=45){
     BP.set_motor_dps(PORT_B, speed*1.07);
     BP.set_motor_dps(PORT_C, -speed);
 }
 
+//functie om naar rechts te draaien met dps
 void right(int speed=45){
     BP.set_motor_dps(PORT_B, -speed*1.07);
     BP.set_motor_dps(PORT_C, speed);
 }
 
+//elke motor kan met deze functie aparte snelheid krijgen
 void manualDirection(int left=15, int right=15){
     BP.set_motor_dps(PORT_B, left*1.07);
     BP.set_motor_dps(PORT_C, right);
 }
 
+//formule voor het bepalen wanneer de robot moet bewegen/draaien
 void followPIDLine(int white, int black, sensor_light_t Light3){
-    int midpoint = ( white - black ) / 2 + black;
+    int midpoint = ( white - black ) / 2 + black;                       //bepaald wat de waarde tussen wit en zwart is + zwart
     float kp = 0.8; 
     float ki = 0;
     float kd = 0.002;
@@ -103,7 +111,7 @@ void followPIDLine(int white, int black, sensor_light_t Light3){
         integral = error + integral;
         derivative = error - lasterror;
         correction = kp * error + ki * integral + kd * derivative;
-        manualDirection(600+correction, 600-correction);
+        manualDirection(600+correction, 600-correction);                //bepaald de kracht van de motoren
         lasterror = error;
     }
 }
@@ -112,18 +120,23 @@ int main(){
     signal(SIGINT, exit_signal_handler); // register the exit function for Ctrl+C
     BP.detect(); // Make sure that the BrickPi3 is communicating and that the firmware is compatible with the drivers.
     int error;
+    
+    //checked of de motoren/sensoren kloppen
     if(!initialize()){
         cout << "Initialisatie gelukt!";
     } else {
         cout << "Initialisatie mislukt...";
         return 1;
     }
-    sensor_color_t      Color1;
+    
+    sensor_color_t      Color1;               
     sensor_ultrasonic_t Ultrasonic2;
     sensor_light_t      Light3;
-    sensor_touch_t      Touch4;
-    int white;
-    int black;
+    
+    int white;                                  //de waarde van de ondergrond
+    int black;                                  //de waarde van de lijn
+    
+    //checked of de calibratie gelukt is
     if(calibrate(black, white, Light3)){
         cout << "Calibratie gelukt met " << black << " als zwartwaarde en " << white << " als witwaarde";
     } else {
@@ -135,6 +148,7 @@ int main(){
             return 1;
         }
     }
+    
     followPIDLine(white, black, Light3);
 }
 
