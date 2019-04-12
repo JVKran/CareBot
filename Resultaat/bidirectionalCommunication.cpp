@@ -105,18 +105,18 @@ int main () {
       }
       // Als er meer dan 50000 witte pixels zijn
       if(cv::countNonZero(redOnly) > 50000){
-		cv::Mat left = redOnly(cv::Range(0, redOnly.rows -1), cv::Range(0, redOnly.cols / 2 -1));
-		cv::Mat right = redOnly(cv::Range(0, redOnly.rows -1), cv::Range(redOnly.cols / 2 + 1, redOnly.cols -1));
-		int rightWhite = cv::countNonZero(right);
-		int leftWhite = cv::countNonZero(left);
+		cv::Mat left = redOnly(cv::Range(0, redOnly.rows -1), cv::Range(0, redOnly.cols / 2 -1)); 			//Het beeld verdelen naar links
+		cv::Mat right = redOnly(cv::Range(0, redOnly.rows -1), cv::Range(redOnly.cols / 2 + 1, redOnly.cols -1));	//Het beeld verdelen naar rechts
+		int rightWhite = cv::countNonZero(right);		//Het tellen van witte waardes aan de rechter kant
+		int leftWhite = cv::countNonZero(left);			//Het tellen van witte waardes aan de linker kant
 	        // Als er links meer witte pixels zijn dan rechts geef dan rode balk weer op scherm (links)
-		if(leftWhite > rightWhite){
-			write(fd,"leftDanger#",50);
+		if(leftWhite > rightWhite){	
+			write(fd,"leftDanger#",50);		//Rode balk links
 		} else {
-			write(fd,"rightDanger#",50);
+			write(fd,"rightDanger#",50);		//Rode balk rechts
 		}
       } else {
-	    write(fd,"noDirectionDanger#",50);
+	    write(fd,"noDirectionDanger#",50);			//Geen balk links of rechts
       }
       tipka = cv::waitKey(30);
       // Als de afstand voor kleiner is dan 25cm, geef dan een rode balk boven het scherm weer
