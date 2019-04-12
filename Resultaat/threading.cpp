@@ -16,11 +16,11 @@ BrickPi3 BP;
 bool grab = false;
 void exit_signal_handler(int signo);
 
-Mat redFilter(const Mat& src){
+Mat redFilter(const Mat& src){			//filtert afbeelding
     assert(src.type() == CV_8UC3);
 
     Mat redOnly;
-    inRange(src, Scalar(0, 0, 0), Scalar(125, 125, 255), redOnly);
+    inRange(src, Scalar(0, 0, 0), Scalar(125, 125, 255), redOnly);		//maakt een kleurfilten in de gespecificeerde limieten voor rgb en maakt een nieuwe matrix met dit filter
 
     return redOnly;
 }
@@ -28,7 +28,7 @@ Mat redFilter(const Mat& src){
 void readCam(sensor_ultrasonic_t Ultrasonic2){
   char tipka;
   Mat frame;
-  VideoCapture cap;
+  VideoCapture cap;			//maakt foto
   cap.open(0);
   if (!cap.isOpened()) {
         cerr << "ERROR! Unable to open camera\n";
@@ -44,18 +44,18 @@ void readCam(sensor_ultrasonic_t Ultrasonic2){
         // show live and wait for a key with timeout long enough to show images
         imshow("CAMERA 1", frame);  // Window name
         imshow("Red Camera", redOnly);  // Window name
-        if(cv::countNonZero(redOnly) > 50000 || (BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 25)){
-		cv::Mat left = redOnly(cv::Range(0, redOnly.rows -1), cv::Range(0, redOnly.cols / 2 -1));
-		cv::Mat right = redOnly(cv::Range(0, redOnly.rows -1), cv::Range(redOnly.cols / 2 + 1, redOnly.cols -1));
+        if(cv::countNonZero(redOnly) > 50000 || (BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 25)){			//als er na het filter veel witte pixels zijn 
+		cv::Mat left = redOnly(cv::Range(0, redOnly.rows -1), cv::Range(0, redOnly.cols / 2 -1));				//verdeelt afbeelding in links en rechts
+		cv::Mat right = redOnly(cv::Range(0, redOnly.rows -1), cv::Range(redOnly.cols / 2 + 1, redOnly.cols -1));	
 		int rightWhite = cv::countNonZero(right);
 		int leftWhite = cv::countNonZero(left);
 		if(leftWhite > rightWhite){
-			cout << "Turn Right!" << endl;
+			cout << "Turn Right!" << endl;				//gaat de kant op met minste witte pixels
 		} else {
 			cout << "Turn Left!" << endl;
 		}
 	} else {
-		cout << "Rechtdoor" << endl;
+		cout << "Rechtdoor" << endl;					//bij weinig witte pixels rechts
 	}	
 	tipka = cv::waitKey(30);
     }
@@ -103,24 +103,24 @@ void detect(sensor_ultrasonic_t Ultrasonic2){
 
 
 bool initialize(){
-	if(BP.get_voltage_battery() < 10.85){
+	if(BP.get_voltage_battery() < 10.85){		//onderspanningsbeveiliging
 		cout << "Batterijspanning is te laag! Namelijk " << BP.get_voltage_battery() << "V. Script wordt getermineerd." << endl << endl;
 		BP.reset_all();
 		exit(-2);
 	} else {
 		cout << "Batterijspanning is goed. Namelijk " << BP.get_voltage_battery() << "V." << endl << endl;
 	}
-	BP.set_sensor_type(PORT_1, SENSOR_TYPE_NXT_COLOR_FULL);
+	BP.set_sensor_type(PORT_1, SENSOR_TYPE_NXT_COLOR_FULL);			//sensoren en motoren initialiseren
 	BP.set_sensor_type(PORT_2, SENSOR_TYPE_NXT_ULTRASONIC);
 	BP.set_sensor_type(PORT_3, SENSOR_TYPE_NXT_LIGHT_ON);
 	BP.set_sensor_type(PORT_4, SENSOR_TYPE_TOUCH);
 	BP.set_sensor_type(PORT_2, SENSOR_TYPE_NXT_ULTRASONIC);
-	BP.set_motor_limits(PORT_B, 100, 0);
+	BP.set_motor_limits(PORT_B, 100, 0);					//powerlimieten instellen
 	BP.set_motor_limits(PORT_C, 100, 0);
 }
 
 
-void left(int speed=45){
+void left(int speed=45){			//bewegingsfuncities
     BP.set_motor_dps(PORT_B, speed*1.07);
     BP.set_motor_dps(PORT_C, -speed);
 }
@@ -146,7 +146,7 @@ int main () {
 	BP.reset_all();
 	exit(-2);
   }
-  sensor_color_t      Color1;
+  sensor_color_t      Color1;			//sensors toewijzen
   sensor_ultrasonic_t Ultrasonic2;
   sensor_light_t      Light3;
   sensor_touch_t      Touch4;
@@ -154,14 +154,14 @@ int main () {
   vector<string> y(3);
   int j = 0;
   bool grab = false;
-  thread camera(readCam,Ultrasonic2);
+  thread camera(readCam,Ultrasonic2);		//verschillende threads maken
   string tmp;
-  ifstream myfile ("/dev/rfcomm0");
+  ifstream myfile ("/dev/rfcomm0");		//via het virtuele bestand /dev/rfcomm0 met bluetooth communiceren
   if (myfile.is_open()){
     while ( getline (myfile,line) ){
       tmp = "";
-      j = 0;
-      for(unsigned int i = 0; i < line.size(); i++){
+      j = 0;			//positie data in vector
+      for(unsigned int i = 0; i < line.size(); i++){	//data uitlezen van bluetooth voor x y as en knop
 	if(line[i] != ','){
             tmp += line[i];
         }
@@ -172,20 +172,20 @@ int main () {
        	}
       }
       cout << line << endl;
-      if(stoi(y[0]) > 2000 || stoi(y[0]) < 1600 || stoi(y[1]) > 2000 || stoi(y[1]) < 1600){
+      if(stoi(y[0]) > 2000 || stoi(y[0]) < 1600 || stoi(y[1]) > 2000 || stoi(y[1]) < 1600){//definieert deadzones voor inacurate centrering joystick
       	manualDirection((((stoi(y[0])-2000)/2)-((stoi(y[1])-2048)/4)), (((stoi(y[0])-2000)/2)+((stoi(y[1])-2048)/4)));
       } else {
 	stop();
       }
-      if(stoi(y[2])==0){
-		BP.set_motor_power(PORT_D, 0);
+      if(stoi(y[2])==0){								//grijpen sls knop is ingedrukt
+		BP.set_motor_power(PORT_D, 0);	
 		BP.offset_motor_encoder(PORT_D, BP.get_motor_encoder(PORT_D));
 		int32_t EncoderD = BP.get_motor_encoder(PORT_D);
 		BP.set_motor_position(PORT_D, EncoderD);
 		BP.set_motor_position(PORT_D, -4);
 		grab = true;
       }
-      if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 8 && grab){
+      if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 8 && grab){		//als een object vast is, loslaten
 	BP.set_motor_power(PORT_D, 20);
 	
 	grab = false;
@@ -194,7 +194,7 @@ int main () {
   } else {
       cout << "Unable to open file"; 
   }
-  camera.join();
+  camera.join();  //join threads
   return 0;
 }
 
