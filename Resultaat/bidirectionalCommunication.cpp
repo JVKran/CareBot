@@ -28,16 +28,6 @@ Mat redFilter(const Mat& src){
     return redOnly;
 }
 
-void fwd(int speed=45){
-    BP.set_motor_dps(PORT_B, speed*1.07); //ivm ongelijkheid motoren.
-    BP.set_motor_dps(PORT_C, speed);
-}
-
-void stop(void){
-	BP.set_motor_power(PORT_B, 0);
-    	BP.set_motor_power(PORT_C, 0);
-}
-
 bool initialize(){
 	if(BP.get_voltage_battery() < 10.85){
 		cout << "Batterijspanning is te laag! Namelijk " << BP.get_voltage_battery() << "V. Script wordt getermineerd." << endl << endl;
@@ -46,29 +36,9 @@ bool initialize(){
 	} else {
 		cout << "Batterijspanning is goed. Namelijk " << BP.get_voltage_battery() << "V." << endl << endl;
 	}
-	BP.set_sensor_type(PORT_1, SENSOR_TYPE_NXT_COLOR_FULL);
-	BP.set_sensor_type(PORT_2, SENSOR_TYPE_NXT_ULTRASONIC);
-	BP.set_sensor_type(PORT_3, SENSOR_TYPE_NXT_LIGHT_ON);
-	BP.set_sensor_type(PORT_4, SENSOR_TYPE_TOUCH);
 	BP.set_sensor_type(PORT_2, SENSOR_TYPE_NXT_ULTRASONIC);
 	BP.set_motor_limits(PORT_B, 100, 0);
 	BP.set_motor_limits(PORT_C, 100, 0);
-}
-
-
-void left(int speed=45){
-    BP.set_motor_dps(PORT_B, speed*1.07);
-    BP.set_motor_dps(PORT_C, -speed);
-}
-
-void right(int speed=45){
-    BP.set_motor_dps(PORT_B, -speed*1.07);
-    BP.set_motor_dps(PORT_C, speed);
-}
-
-void circle(int speed=50, int insideSpeed=2){
-        BP.set_motor_dps(PORT_B, speed);
-        BP.set_motor_dps(PORT_C, speed/insideSpeed);
 }
 
 void manualDirection(int left=15, int right=15){
@@ -87,10 +57,7 @@ int main () {
 	BP.reset_all();
 	exit(-2);
   }
-  sensor_color_t      Color1;
   sensor_ultrasonic_t Ultrasonic2;
-  sensor_light_t      Light3;
-  sensor_touch_t      Touch4;
   string line;
   vector<string> y(3);
   int j = 0;
@@ -100,12 +67,15 @@ int main () {
   cap.open(0);
   char tipka;
   bool grab = false;
+	
   if (!cap.isOpened()) {
         cerr << "Fout tijdens het openen van de Camera!\n";
         return -1;
   }
+	
   ifstream myfile ("/dev/rfcomm0"); //Virtuele seriële poort
   int fd = open("/dev/rfcomm0", O_WRONLY | O_APPEND);
+	
   if (myfile.is_open() && fd >= 0){
     while ( getline (myfile,line) ){
       cap.read(frame);
@@ -114,11 +84,15 @@ int main () {
             break;
       }
       usleep(500);
+	    
       Mat redOnly = redFilter(frame);
+	    
       imshow("CAMERA 1", frame);  // Window name
       imshow("Blank Camera", redOnly);  // Window name
+	    
       tmp = "";
       j = 0;
+	    
       for(unsigned int i = 0; i < line.size(); i++){
 	if(line[i] != ','){
             tmp += line[i];
@@ -153,20 +127,16 @@ int main () {
 	       write(fd,"noFrontDanger#",50);
       }
       cout << line << endl;
-      if(stoi(y[0]) > 2000 || stoi(y[0]) < 1600 || stoi(y[1]) > 2000 || stoi(y[1]) < 1600){
-      	manualDirection((((stoi(y[0])-2000)/2)-((stoi(y[1])-2048)/4)), (((stoi(y[0])-2000)/2)+((stoi(y[1])-2048)/4)));
+      if(stoi(y[0]) > 2000 || stoi(y[0]) < 1600 || stoi(y[1]) > 2000 || stoi(y[1]) < 1600){				//Voorwaarden om het nog op zijn eigen plek te laten rond draaien
+      	manualDirection((((stoi(y[0])-2000)/2)-((stoi(y[1])-2048)/4)), (((stoi(y[0])-2000)/2)+((stoi(y[1])-2048)/4))); //Formule om het te laten bewegen via joystick
       }
-      if(stoi(y[2])==0){
-		BP.set_motor_power(PORT_D, 0);
-		BP.offset_motor_encoder(PORT_D, BP.get_motor_encoder(PORT_D));
-		int32_t EncoderD = BP.get_motor_encoder(PORT_D);
-		BP.set_motor_position(PORT_D, EncoderD);
-		BP.set_motor_position(PORT_D, -4);
+      if(stoi(y[2])==0){					//Als er op de knop wordt gedrukt, krijg je de waarde 0 en gaat het grijpen, stoi maakt het een getal
+		BP.set_motor_power(PORT_D, 0);			//De power stoppen
+		BP.set_motor_position(PORT_D, -4);		//De klauwen open maken
 		grab = true;
       }
-      if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 8 && grab){
-	BP.set_motor_power(PORT_D, 20);
-	
+      if(BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 8 && grab){		//Als de Ultrasone een afstand heeft lager dan 8 en grab is true, voer het uit
+	BP.set_motor_power(PORT_D, 20);				//De klauwen grijpen vast
 	grab = false;
       }
     }
