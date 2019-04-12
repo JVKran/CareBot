@@ -44,8 +44,8 @@ static void read_csv(const string& filename, vector<Mat>& images, vector<int>& l
         getline(liness, path, separator);
         getline(liness, classlabel);
         if(!path.empty() && !classlabel.empty()) {  
-	    images.push_back(imread(path, 0));
-            labels.push_back(atoi(classlabel.c_str()));
+	    images.push_back(imread(path, 0));					//Geeft het pad van de afbeeldingen naar images
+            labels.push_back(atoi(classlabel.c_str()));				//Geeft de nummers naar de labels
         }
     }
 }
@@ -55,6 +55,9 @@ int main(int argc, const char *argv[]) {
     // if no arguments were given.
     string name;
     if (argc != 4) {
+	    									//Als er geen 4 argumenten zijn meegegeven
+	    									//(Pad naar cascade, pad naar de csv of de video nummer)
+	    									//dan exit het
         cout << "usage: " << argv[0] << " </path/to/haar_cascade> </path/to/csv.ext> </path/to/device id>" << endl;
         cout << "\t </path/to/haar_cascade> -- Path to the Haar Cascade for face detection." << endl;
         cout << "\t </path/to/csv.ext> -- Path to the CSV file with the face database." << endl;
@@ -62,9 +65,9 @@ int main(int argc, const char *argv[]) {
         exit(1);
     }
     // Get the path to your CSV:
-    string fn_haar = string(argv[1]);
-    string fn_csv = string(argv[2]);
-    int deviceId = atoi(argv[3]);
+    string fn_haar = string(argv[1]);						//Zet het pad van cascade naar fn_haar
+    string fn_csv = string(argv[2]);						//Zet het pad van de csv file naar fn_csv
+    int deviceId = atoi(argv[3]);						//Maakt van het gegeven nummer dat nog een string is, een echt nummer en geeft het dan aan deviceId
     // These vectors hold the images and corresponding labels:
     vector<Mat> images;
     vector<int> labels;
