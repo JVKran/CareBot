@@ -10,8 +10,8 @@ BrickPi3 BP;
 
 
 int main(){
-    BP.reset_all();    // Reset everything so there are no run-away motors
-    BP.reset_all();    // Reset everything so there are no run-away motors
+    BP.reset_all();    // stopt de motoren
+    BP.reset_all();    // nog een 2e keer om zeker te zijn
 	exit(-1);
 
 }
