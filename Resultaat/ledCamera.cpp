@@ -74,27 +74,27 @@ void down(int speed=-45){
          return -1;
     }
 
-    namedWindow("Control", CV_WINDOW_AUTOSIZE); //create a window called "Control"
+   namedWindow("Control", CV_WINDOW_AUTOSIZE); //create a window called "Control"
 
-  int iLowH = 0;//Hue (0 - 179)De kleur
- int iHighH = 179;
+   int iLowH = 0;//Hue (0 - 179)De kleur
+   int iHighH = 179;
 
-  int iLowS = 0; //Saturation (0 - 255)Hoeveel het met wit mixed
- int iHighS = 255;
+   int iLowS = 0; //Saturation (0 - 255)Hoeveel het met wit mixed
+   int iHighS = 255;
 
-  int iLowV = 255; //Value (0 - 255) Hoeveel het met zwart mixed
- int iHighV = 255;
+   int iLowV = 255; //Value (0 - 255) Hoeveel het met zwart mixed
+   int iHighV = 255;
 
   //Create trackbars in "Control" window
- cvCreateTrackbar("LowH", "Control", &iLowH, 179); //Hue (0 - 179)
- cvCreateTrackbar("HighH", "Control", &iHighH, 179);
+    cvCreateTrackbar("LowH", "Control", &iLowH, 179); //Hue (0 - 179)
+    cvCreateTrackbar("HighH", "Control", &iHighH, 179);
 
-  cvCreateTrackbar("LowS", "Control", &iLowS, 255); //Saturation (0 - 255)
- cvCreateTrackbar("HighS", "Control", &iHighS, 255);
+    cvCreateTrackbar("LowS", "Control", &iLowS, 255); //Saturation (0 - 255)
+    cvCreateTrackbar("HighS", "Control", &iHighS, 255);
 
-  cvCreateTrackbar("LowV", "Control", &iLowV, 255); //Value (0 - 255)
- cvCreateTrackbar("HighV", "Control", &iHighV, 255);
-	bool isSeen = false;
+    cvCreateTrackbar("LowV", "Control", &iLowV, 255); //Value (0 - 255)
+    cvCreateTrackbar("HighV", "Control", &iHighV, 255);
+    bool isSeen = false; 				//Als het programma start, dan moet het eerst een licht hebben gezien om af te sluiten
     while (true)
    {
         Mat imgOriginal;
@@ -109,53 +109,50 @@ void down(int speed=-45){
 
     	Mat imgHSV;
 
-	 cvtColor(imgOriginal, imgHSV, COLOR_BGR2HSV); //Convert the captured frame from BGR to HSV
+	cvtColor(imgOriginal, imgHSV, COLOR_BGR2HSV); //Convert the captured frame from BGR to HSV
  
- 	 Mat imgThresholded;
+ 	Mat imgThresholded;
 
    	inRange(imgHSV, Scalar(iLowH, iLowS, iLowV), Scalar(iHighH, iHighS, iHighV), imgThresholded); //Threshold the image
       
-  //morphological opening (remove small objects from the foreground)
+  	//morphological opening (remove small objects from the foreground)
   	erode(imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
   	dilate( imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) ); 
 
-   //morphological closing (fill small holes in the foreground)
+  	//morphological closing (fill small holes in the foreground)
   	dilate( imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) ); 
  	erode(imgThresholded, imgThresholded, getStructuringElement(MORPH_ELLIPSE, Size(5, 5)) );
 
    	imshow("Thresholded Image", imgThresholded); //show the thresholded image
   	imshow("Original", imgOriginal); //show the original image
-	cout <<"Trash: "<<cv::countNonZero(imgThresholded) << endl;
+	cout <<"Tresh: "<<cv::countNonZero(imgThresholded) << endl;
 
-	if(cv::countNonZero(imgThresholded) > 100){
-		cv::Mat left = imgThresholded(cv::Range(0, imgThresholded.rows -1), cv::Range(0, imgThresholded.cols / 2 -1));
-		cv::Mat right = imgThresholded(cv::Range(0, imgThresholded.rows -1), cv::Range(imgThresholded.cols / 2 + 1, imgOriginal.cols -1));
-		int rightWhite = cv::countNonZero(right);
-		int leftWhite = cv::countNonZero(left);
-		cout << "links: "<<leftWhite << endl;
-		cout << "rechts: "<<rightWhite << endl;
-		isSeen = true;
-		if(rightWhite <= 125 ){
+	if(cv::countNonZero(imgThresholded) > 100){				//Als er op het beeld meer dan 100 witte pixels te voorschijn komen, ga in deze if-statement
+		cv::Mat left = imgThresholded(cv::Range(0, imgThresholded.rows -1), cv::Range(0, imgThresholded.cols / 2 -1));				//Het beeld verdelen naar links
+		cv::Mat right = imgThresholded(cv::Range(0, imgThresholded.rows -1), cv::Range(imgThresholded.cols / 2 + 1, imgOriginal.cols -1));	//Het beeld verdelen naar rechts
+		int rightWhite = cv::countNonZero(right); 			//Het tellen van witte waardes aan de rechter kant
+		int leftWhite = cv::countNonZero(left);				//Het tellen van witte waardes aan de linker kant
+		cout << "links: "<<leftWhite << endl; 				//Print uit wat de witte waarde zijn aan de linker kant
+		cout << "rechts: "<<rightWhite << endl;				//Print uit wat de witte waarde zijn aan de rechter kant
+		isSeen = true;							//Licht gezien, dus als de treshold lager is dan 100 stopt het
+		if(rightWhite <= 125 ){						//Als de wit waarden op het rechterbeeld kleiner of gelijk is aan 125, ga naar links
 			//cout << "Turn left!" << endl;
 			solidLeft(50);
 			
-		} else if(leftWhite <= 125){
+		} else if(leftWhite <= 125){					//Als de wit waarden op het linkerbeeld kleiner of gelijk is aan 125, ga naar rechts
 			//cout << "Turn right!" << endl;
 			solidRight(50);
 			
-		}else if(rightWhite>300 &&leftWhite>300){
+		}else if(rightWhite>300 &&leftWhite>300){			//Als beide waarde hoger dan 300 zijn, is het rode voorwerp in het midden en zal het naar voren gaan
 			fwd(600);
 			
 		}
-	} else if (isSeen){
+	} else if (isSeen){							//Als de treshold niet hoger is dan 100 en isSeen is true, dan stopt het
 		stop();
-		BP.reset_all();    // Reset everything so there are no run-away motors
+		BP.reset_all();   						//Reset everything so there are no run-away motors
 		exit(0);
-	} else {
+	} else {								//Anders maak een rondje naar links als het nog geen licht heeft gezien
 		solidLeft(25);
-	}
-	if(cv::countNonZero(imgThresholded) < 100){
-		stop();
 	}
 
         if (waitKey(30) == 27) //wait for 'esc' key press for 30ms. If 'esc' key is pressed, break loop
