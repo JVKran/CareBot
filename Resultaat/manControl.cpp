@@ -91,7 +91,7 @@ int main () {
 	BP.set_motor_power(PORT_D, 20);			//Zet de motor power op 20 om er voor te zorgen dat de grijper grip blijft houden op het object
 	grab = false;					//Verander de waarde van grab zodat de robot weet dat de grijper dicht is
         odd = false;					//Zorgt er voor dat de loop een keer niks doet met de grijper in verband met dubbele input voor grijper
-	cout << "dicht\n";
+	cout << "dicht\n";				//Zeg dat het dicht gaat
       }else{
  	odd = true;					//Na een overgeslagen rondje in de loop zorgt dit er voor dat de grijper weer gebruikt kan worden
     }
