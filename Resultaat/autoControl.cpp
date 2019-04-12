@@ -20,13 +20,13 @@ char tipka;
 char filename[100]; // For filename
 int  c = 1; // For filename
 
-void exit_signal_handler(int signo);
+void exit_signal_handler(int signo);						//defineert exithandler
 
 Mat redFilter(const Mat& src){
     assert(src.type() == CV_8UC3);
 
     Mat redOnly;
-    inRange(src, Scalar(0, 0, 0), Scalar(80, 80, 255), redOnly);
+    inRange(src, Scalar(0, 0, 0), Scalar(80, 80, 255), redOnly);			//defineert het kleurgebied voor kleurfilter en filtert naar een mask-matrix
 
     return redOnly;
 }
@@ -42,7 +42,7 @@ void stop(void){
 }
 
 bool initialize(){
-	if(BP.get_voltage_battery() < 10.85){
+	if(BP.get_voltage_battery() < 10.85){			//battrij beschermen tegen ondervoltage
 		cout << "Batterijspanning is te laag! Namelijk " << BP.get_voltage_battery() << "V. Script wordt getermineerd." << endl << endl;
 		BP.reset_all();
 		exit(-2);
@@ -80,17 +80,17 @@ void manualDirection(int left=15, int right=15){
 
 int main(int, char**){
     initialize();
-    sensor_color_t      Color1;
+    sensor_color_t      Color1;				//sensors initialiseren
     sensor_ultrasonic_t Ultrasonic2;
     sensor_light_t      Light3;
     sensor_touch_t      Touch4;
-    fwd();
+    fwd();						//rijdt direct naar voren
     Mat frame;
     string line;
     vector<string> y(3);
     int j = 0;
     string tmp;
-    ifstream myfile ("/dev/rfcomm0");
+    ifstream myfile ("/dev/rfcomm0");			//bestand voor bluetoothcommunicatie
     //--- INITIALIZE VIDEOCAPTURE
     VideoCapture cap;
     // open the default camera using default API
@@ -110,7 +110,7 @@ int main(int, char**){
     {
 	time_t current_time;
 	current_time = time(NULL);
-	if(current_time %5==0){
+	if(current_time %5==0){		//termineren bij een bluetooth bericht van 1 caracter lang en die als exit_code meegeven
         	getline (myfile,line);
         	if(line.size() == 1){
           	cout << "Ga nu exiten... DDDDDOOOOOOOOEEEEEEEIIIIIII!!!!!!!" << line << endl;
@@ -133,22 +133,22 @@ int main(int, char**){
         // show live and wait for a key with timeout long enough to show images
         imshow("CAMERA 1", frame);  // Window name
         imshow("Red Camera", redOnly);  // Window name
-	if(cv::countNonZero(redOnly) > 50000 || (BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 15)){
-		cv::Mat left = redOnly(cv::Range(0, redOnly.rows -1), cv::Range(0, redOnly.cols / 2 -1));
+	if(cv::countNonZero(redOnly) > 50000 || (BP.get_sensor(PORT_2, Ultrasonic2) == 0 && Ultrasonic2.cm < 15)){	//alleen als er veel pixels binnen het gedefineerde kleurgebied vallen
+		cv::Mat left = redOnly(cv::Range(0, redOnly.rows -1), cv::Range(0, redOnly.cols / 2 -1));		//split matrix op links en rechtsts
 		cv::Mat right = redOnly(cv::Range(0, redOnly.rows -1), cv::Range(redOnly.cols / 2 + 1, redOnly.cols -1));
 		int rightWhite = cv::countNonZero(right);
 		int leftWhite = cv::countNonZero(left);
-		if(leftWhite > rightWhite && Ultrasonic2.cm > 15){
+		if(leftWhite > rightWhite && Ultrasonic2.cm > 15){		//als er meer pixels binnnen het kleurgebied links bevinden, ga dan naar rechts
 			//cout << "Turn Right!" << endl;
 			solidRight(200);
-		} else if(Ultrasonic2.cm > 15) {
+		} else if(Ultrasonic2.cm > 15) {				//zie boverstaande maar andersom
 			//cout << "Turn Left!" << endl;
 			solidLeft(200);
-		} else {
+		} else {							//anders draait hei op zijn plaats naar links
 			solidLeft(200);
 			usleep(4000000);
 		}
-		usleep(100000);
+		usleep(100000);							//geeft de robot een kans om te draaien
 	} else {
 		fwd();
 	}	
