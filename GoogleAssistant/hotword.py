@@ -22,6 +22,7 @@ import json
 import os.path
 import pathlib2 as pathlib
 import subprocess
+import time
 
 import google.oauth2.credentials
 
@@ -69,17 +70,28 @@ def process_event(event):
             if command == "TurnLight":
                 print('Lampsignaal ontvangen')
     if event.type == EventType.ON_RECOGNIZING_SPEECH_FINISHED and event.args:
-        print('You said:', event.args['text'])
+        print('Je zei: ', event.args['text'])
         text = event.args['text'].lower()
-        if text == 'zet project aan':
+        if text == 'zet project lamp aan':
                 subprocess.run(["echo lightOn# > /dev/rfcomm0"], shell=True)
-        if text == 'zet project uit':
+        if text == 'zet project lamp uit':
                 subprocess.run(["echo lightOff# > /dev/rfcomm0"], shell=True)
         if text == 'kom naar me toe':
-                subprocess.run(["/home/pi/Desktop/Resultaat/ledCamera"], shell=True)
+                print('Oké, ik kom naar je toe!')
+                subprocess.run(["/home/pi/Desktop/Resultaat/Executables/ledCamera"], shell=True)
         if text == 'wie zie ik nu':
-                subprocess.run(["/home/pi/Desktop/Resultaat/faceRec"], shell=True)
-            
+                print('Oké, ik ga even kijken...')
+                subprocess.run(["/home/pi/Desktop/Resultaat/Executables/faceRec /usr/share/opencv/haarcascades/haarcascade_frontalface_default.xml /home/pi/piprograms/Camera/Face/trainFace.txt 0"], shell=True)
+        if text == 'start handmatige besturing':
+                proc = subprocess.Popen(["/home/pi/Desktop/Resultaat/Executables/manControl"])
+                print(proc.pid)
+        if text == 'stop handmatige besturing':
+                subprocess.run(["killall manControl"], shell = True)
+        if text == 'start automatische navigatie':
+                proc = subprocess.Popen(["/home/pi/Desktop/Resultaat/Executables/autoControl"])
+        if text == 'stop automatische navigatie':
+                subprocess.run(["killall autoControl"], shell = True)
+                subprocess.run(["/home/pi/Desktop/Resultaat/Executables/stop"], shell=True)
 
 def main():
     parser = argparse.ArgumentParser(
