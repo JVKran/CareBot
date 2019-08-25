@@ -14,4 +14,4 @@ The robot also has a microphone and speaker connected to it. These are used for 
 - "Hey google, turn the light on/off"
 - "Hey google, start manual control"
 
-You can check out a showcase video over [here](https://www.youtube.com/watch?v=AWg9zco_IYE)!
+You can check out a showcase video over [here](https://www.youtube.com/watch?v=AWg9zco_IYE) and the final code over [here](https://github.com/JVKran/CareBot/tree/master/Resultaat)!
